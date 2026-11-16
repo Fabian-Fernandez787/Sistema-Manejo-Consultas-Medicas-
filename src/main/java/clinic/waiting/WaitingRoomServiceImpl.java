@@ -58,10 +58,39 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
         return new ArrayList<>(normalQueue);
     }
 
-    
+    //Asigna el proximo paciente a un medico disponible
     @Override
     public String callNext(String doctorId) {
-        return null;
+
+        //Verificar que el medico exista
+        Types.Employee employee = registry.getEmployee(doctorId);
+
+        if(!(employee instanceof Types.Doctor)) {
+            throw new IllegalArgumentException("Medico no encontrado");
+        }
+
+        Types.Doctor doctor = (Types.Doctor) employee;
+
+        //Verificar que el medico este disponible
+        if(doctor.status != Types.DoctorStatus.AVAILABLE) {
+            throw new IllegalArgumentException("Medico no disponible");
+        }
+
+        //Verificar que haya pacientes esperando
+        if(normalQueue.isEmpty()) {
+            return null;
+        }
+
+        //Seleccionar el primer paciente de la fila
+        String patientId = normalQueue.poll();
+
+        //Eliminar al paciente de la lista de espera
+        waitingIds.remove(patientId);
+
+        //Cambiar el estado del medico a ocupado
+        registry.setDoctorStatus(doctorId, Types.DoctorStatus.BUSY);
+
+        return patientId;
     }
 
     
