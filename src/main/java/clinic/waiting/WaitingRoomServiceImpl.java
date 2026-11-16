@@ -22,10 +22,34 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
         this.appointments = appointments;
     }
 
-    
+    // Registra pacientes en la sala de espera.
     @Override
     public boolean checkIn(String patientId, int emergencyLevel) {
-        return false;
+        
+        //Verificar que el nivel sea valido
+        if(emergencyLevel < 0 || emergencyLevel > 3) {
+            throw new IllegalArgumentException("Nivel de emrgencia invalido");
+        }
+
+        //Verificar que el paciente exista
+        if(registry.getPatient(patientId) == null) {
+            throw new IllegalArgumentException("Paciente no registrado");
+        }
+
+        //Evitar pacientes duplicados
+        if(waitingIds.contains(patientId)) {
+            return false;
+        }
+
+        //Añadir pacientes normales a la fila
+        if(emergencyLevel == 0) {
+            normalQueue.add(patientId);
+            waitingIds.add(patientId);
+            return true;
+        }
+
+        //Manejo de emergencias pendiente
+        throw new UnsupportedOperationException("Emergencias pendientes");
     }
 
     
