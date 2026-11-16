@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.HashSet;
+import java.util.HashMap;
 
 public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
 
@@ -15,6 +16,9 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
 
     private Queue<String> normalQueue = new LinkedList<>();
     private HashSet<String> waitingIds = new HashSet<>();
+    private HashSet<String> activeVisitIds = new HashSet<>();
+    private HashMap<String, String> patientVitals = new HashMap<>();
+    private HashMap<String, String> patientNurses = new HashMap<>();
 
     public WaitingRoomServiceImpl(Interfaces.IRegistryModule registry, Interfaces.IAppointmentsModule appointments) {
 
@@ -86,6 +90,7 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
 
         //Eliminar al paciente de la lista de espera
         waitingIds.remove(patientId);
+        activeVisitIds.add(patientId);
 
         //Cambiar el estado del medico a ocupado
         registry.setDoctorStatus(doctorId, Types.DoctorStatus.BUSY);
@@ -93,9 +98,30 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
         return patientId;
     }
 
-    
+    //Registra los signos vitales del paciente
     @Override
     public void recordVitals(String patientId, String nurseId, String vitals) {
+    
+        //Verificar que la enfermera exista
+        Types.Employee nurse = registry.getEmployee(nurseId);
+
+        if(nurse == null){
+            throw new IllegalArgumentException("Enfermera no encontrada");
+        }
+
+        //Verificar que tenga el rol NURSE
+        if(nurse.role != Types.Role.NURSE){
+            throw new IllegalArgumentException("El empleado no es enfermera");
+        }
+
+        //Verificar que el paciente este en consulta
+        if(vitals == null || vitals.isBlank()){
+            throw new IllegalArgumentException("Signos vitales invalidos");
+        }
+        
+        //Guardar los signos vitales y la enfermera
+        patientVitals.put(patientId, vitals);
+        patientNurses.put(patientId, nurseId);
     }
 
     
