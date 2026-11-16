@@ -1,6 +1,10 @@
 package clinic.appointments;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -82,4 +86,29 @@ public class AppointmentManager {
 
         return true;
     }
+
+    // Gets today's date and returns all appointments for today
+    // Calls now(), toString(), getAppointmentsForDate()
+    // Called by CLI menu
+    public List<Appointment> getTodaysAppointments() {
+        String today = LocalDate.now().toString();
+        return getAppointmentsForDate(today);
+    }
+
+    // Sorts appointment for date and returns them excluding cancelled ones
+    // Calls ArrayList<>(), startsWith(), values(), add(), comparing()
+    // Called by getTodaysAppointments()
+    public List<Appointment> getAppointmentsForDate(String datePrefix) {
+        List<Appointment> result = new ArrayList<>();
+
+        for (Appointment appt: appointmentMap.values()) {
+            if (appt.startTime != null && appt.startTime.startsWith(datePrefix) && appt.status != AppointmentStatus.CANCELLED) {
+                result.add(appt);
+            }
+        }
+
+        result.sort(Comparator.comparing(appt -> appt.startTime));
+        return result;
+    }
+
 }
