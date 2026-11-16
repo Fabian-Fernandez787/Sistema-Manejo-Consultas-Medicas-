@@ -11,3 +11,4 @@ Sistema de Manejo para Consultas Medicas
 
 6. Autores
 -Fabian Fernandez Gonzalez
+-Caleb G. Martinez Perez
