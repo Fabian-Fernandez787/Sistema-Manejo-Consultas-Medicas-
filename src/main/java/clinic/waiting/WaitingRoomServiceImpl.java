@@ -52,10 +52,10 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
         throw new UnsupportedOperationException("Emergencias pendientes");
     }
 
-    
+    // Muestra los pacientes en orden de llegada sin eliminarlos.
     @Override
     public List<String> listWaiting() {
-        return new ArrayList<>();
+        return new ArrayList<>(normalQueue);
     }
 
     
