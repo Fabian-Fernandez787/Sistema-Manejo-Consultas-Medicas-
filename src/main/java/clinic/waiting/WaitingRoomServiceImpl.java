@@ -109,13 +109,19 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
             throw new IllegalArgumentException("Medico no disponible");
         }
 
-        //Verificar que haya pacientes esperando
-        if(normalQueue.isEmpty()) {
+        // Verificar que haya pacientes esperando
+        if(emergencyQueue.isEmpty() && normalQueue.isEmpty()) {
             return null;
         }
 
-        //Seleccionar el primer paciente de la fila
-        String patientId = normalQueue.poll();
+        // Atender primero a los pacientes de emergencia
+        String patientId;
+
+        if(!emergencyQueue.isEmpty()) {
+            patientId = emergencyQueue.poll().patientId;
+        } else {
+            patientId = normalQueue.poll();
+        }
 
         //Eliminar al paciente de la lista de espera
         waitingIds.remove(patientId);
