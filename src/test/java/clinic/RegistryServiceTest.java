@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -371,5 +372,123 @@ public class RegistryServiceTest {
         assertFalse(
             registry.linkPatientToDoctor("D010", "P999")
         );
+    }
+
+
+    @Test
+    void testGetPatientsForDoctor() {
+
+        Types.Doctor doctor = new Types.Doctor(
+            "D011", "Doctor Eleven", Types.Specialty.GENERAL
+        );
+
+        Types.Patient patient = new Types.Patient(
+            "P011", "Patient Eleven", "7871234567"
+        );
+
+        registry.registerEmployee(doctor);
+        registry.registerPatient(patient);
+
+        registry.linkPatientToDoctor("D011", "P011");
+
+        Set<String> result =
+            registry.getPatientsForDoctor("D011");
+
+        assertEquals(1, result.size());
+        assertTrue(result.contains("P011"));
+    }
+
+
+    // ==========================================
+    // A4: INITIAL SEED DATA
+    // ==========================================
+
+    @Test
+    void testLoadSeedData() {
+
+        registry.loadSeedData();
+
+        // Verify four doctors
+        assertEquals(
+            1,
+            registry.findDoctorsBySpecialty(
+                Types.Specialty.GENERAL
+            ).size()
+        );
+
+        assertEquals(
+            1,
+            registry.findDoctorsBySpecialty(
+                Types.Specialty.PEDIATRIC
+            ).size()
+        );
+
+        assertEquals(
+            1,
+            registry.findDoctorsBySpecialty(
+                Types.Specialty.NEURO
+            ).size()
+        );
+
+        assertEquals(
+            1,
+            registry.findDoctorsBySpecialty(
+                Types.Specialty.RETINA
+            ).size()
+        );
+
+        // Verify nurses and secretary
+        assertNotNull(registry.getEmployee("N101"));
+        assertNotNull(registry.getEmployee("N102"));
+        assertNotNull(registry.getEmployee("S101"));
+
+        // Verify five patients
+        for (int i = 1; i <= 5; i++) {
+            assertNotNull(registry.getPatient("P10" + i));
+        }
+
+        // Verify all four doctors are available
+        assertEquals(4, registry.getAvailableDoctors().size());
+    }
+
+
+    @Test
+    void testSeedDataDoesNotCreateDuplicates() {
+
+        registry.loadSeedData();
+
+        // Loading the same seed data again should not
+        // create duplicate patients or employees.
+        registry.loadSeedData();
+
+        assertEquals(1,
+            registry.findDoctorsBySpecialty(
+                Types.Specialty.GENERAL
+            ).size()
+        );
+
+        assertEquals(1,
+            registry.findDoctorsBySpecialty(
+                Types.Specialty.PEDIATRIC
+            ).size()
+        );
+
+        assertEquals(1,
+            registry.findDoctorsBySpecialty(
+                Types.Specialty.NEURO
+            ).size()
+        );
+
+        assertEquals(1,
+            registry.findDoctorsBySpecialty(
+                Types.Specialty.RETINA
+            ).size()
+        );
+
+        for (int i = 1; i <= 5; i++) {
+            assertNotNull(registry.getPatient("P10" + i));
+        }
+
+        assertEquals(4, registry.getAvailableDoctors().size());
     }
 }
