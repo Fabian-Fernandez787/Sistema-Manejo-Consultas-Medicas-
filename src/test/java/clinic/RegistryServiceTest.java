@@ -32,7 +32,6 @@ public class RegistryServiceTest {
         );
 
         assertTrue(registry.registerPatient(patient));
-
         assertEquals(patient, registry.getPatient("P001"));
     }
 
@@ -49,7 +48,6 @@ public class RegistryServiceTest {
         );
 
         assertTrue(registry.registerPatient(patient1));
-
         assertFalse(registry.registerPatient(patient2));
     }
 
@@ -62,7 +60,6 @@ public class RegistryServiceTest {
         );
 
         assertTrue(registry.registerEmployee(employee));
-
         assertEquals(employee, registry.getEmployee("E001"));
     }
 
@@ -79,7 +76,6 @@ public class RegistryServiceTest {
         );
 
         assertTrue(registry.registerEmployee(employee1));
-
         assertFalse(registry.registerEmployee(employee2));
     }
 
@@ -296,6 +292,84 @@ public class RegistryServiceTest {
                 "D999",
                 Types.DoctorStatus.BUSY
             )
+        );
+    }
+
+
+    // ==========================================
+    // A3: DOCTOR'S PATIENT LIST - NO DUPLICATES
+    // ==========================================
+
+    @Test
+    void testLinkPatientToDoctor() {
+
+        Types.Doctor doctor = new Types.Doctor(
+            "D007", "Doctor Seven", Types.Specialty.GENERAL
+        );
+
+        Types.Patient patient = new Types.Patient(
+            "P007", "Patient Seven", "7871234567"
+        );
+
+        registry.registerEmployee(doctor);
+        registry.registerPatient(patient);
+
+        assertTrue(
+            registry.linkPatientToDoctor("D007", "P007")
+        );
+    }
+
+
+    @Test
+    void testSamePatientLinkedTwiceToSameDoctor() {
+
+        Types.Doctor doctor = new Types.Doctor(
+            "D008", "Doctor Eight", Types.Specialty.RETINA
+        );
+
+        Types.Patient patient = new Types.Patient(
+            "P008", "Patient Eight", "7871234567"
+        );
+
+        registry.registerEmployee(doctor);
+        registry.registerPatient(patient);
+
+        assertTrue(
+            registry.linkPatientToDoctor("D008", "P008")
+        );
+
+        assertFalse(
+            registry.linkPatientToDoctor("D008", "P008")
+        );
+    }
+
+
+    @Test
+    void testLinkPatientToMissingDoctor() {
+
+        Types.Patient patient = new Types.Patient(
+            "P009", "Patient Nine", "7871234567"
+        );
+
+        registry.registerPatient(patient);
+
+        assertFalse(
+            registry.linkPatientToDoctor("D999", "P009")
+        );
+    }
+
+
+    @Test
+    void testLinkMissingPatientToDoctor() {
+
+        Types.Doctor doctor = new Types.Doctor(
+            "D010", "Doctor Ten", Types.Specialty.NEURO
+        );
+
+        registry.registerEmployee(doctor);
+
+        assertFalse(
+            registry.linkPatientToDoctor("D010", "P999")
         );
     }
 }

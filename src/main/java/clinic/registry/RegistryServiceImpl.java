@@ -6,8 +6,10 @@ import clinic.common.Types;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class RegistryServiceImpl implements Interfaces.IRegistryModule {
 
@@ -15,10 +17,7 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
     // A1: PATIENT AND EMPLOYEE REGISTRY
     // ==========================================
 
-    // Patients indexed by their unique ID
     private final Map<String, Types.Patient> patients;
-
-    // Employees indexed by their unique ID
     private final Map<String, Types.Employee> employees;
 
 
@@ -26,12 +25,18 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
     // A2: DOCTOR MANAGEMENT
     // ==========================================
 
-    // Doctors indexed by their unique ID
     private final Map<String, Types.Doctor> doctors;
 
-    // Doctors organized by their four valid specialties
     private final Map<Types.Specialty, Map<String, Types.Doctor>>
             specialtyIndex;
+
+
+    // ==========================================
+    // A3: DOCTOR'S PATIENT LIST
+    // ==========================================
+
+    private final Map<String, Set<String>> doctorPatients;
+
 
     // ==========================================
     // CONSTRUCTOR
@@ -46,11 +51,14 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         specialtyIndex =
                 new EnumMap<>(Types.Specialty.class);
 
-        // Initialize an index for each valid specialty
+        doctorPatients = new HashMap<>();
+
+        // Initialize all four specialties
         for (Types.Specialty specialty : Types.Specialty.values()) {
             specialtyIndex.put(specialty, new HashMap<>());
         }
     }
+
 
     // ==========================================
     // A1: REGISTER PATIENT
@@ -72,6 +80,7 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         return true;
     }
 
+
     // ==========================================
     // A1 AND A2: REGISTER EMPLOYEE
     // ==========================================
@@ -91,7 +100,7 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             return false;
         }
 
-        // Doctors must also be added to the doctor indexes
+        // If the employee is a doctor, register it in all doctor indexes
         if (e.role == Types.Role.DOCTOR) {
 
             if (!(e instanceof Types.Doctor)) {
@@ -107,6 +116,7 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
 
         return true;
     }
+
 
     // ==========================================
     // A2: ADD DOCTOR
@@ -131,14 +141,16 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             return false;
         }
 
-        // Add doctor to employee and doctor maps
         employees.put(doctor.id, doctor);
         doctors.put(doctor.id, doctor);
 
-        // Update the specialty index
+        // Add doctor to the specialty index
         specialtyIndex
             .get(doctor.specialty)
             .put(doctor.id, doctor);
+
+        // A3: Create an empty patient set for this doctor
+        doctorPatients.put(doctor.id, new HashSet<>());
 
         return true;
     }
@@ -167,7 +179,7 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
 
 
     // ==========================================
-    // A2: REMOVE DOCTOR
+    // A2 AND A3: REMOVE DOCTOR
     // ==========================================
 
     @Override
@@ -182,10 +194,13 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         // Remove doctor from employee registry
         employees.remove(doctorId);
 
-        // Update the specialty index
+        // Remove doctor from specialty index
         specialtyIndex
             .get(doctor.specialty)
             .remove(doctorId);
+
+        // A3: Remove doctor's patient list
+        doctorPatients.remove(doctorId);
 
         return true;
     }
@@ -261,7 +276,7 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
 
 
     // ==========================================
-    // A3: PENDING IMPLEMENTATION
+    // A3: LINK PATIENT TO DOCTOR
     // ==========================================
 
     @Override
@@ -269,6 +284,39 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             String doctorId,
             String patientId) {
 
-        throw new UnsupportedOperationException("Pending A3");
+        // Verify doctor exists
+        if (!doctors.containsKey(doctorId)) {
+            return false;
+        }
+
+        // Verify patient exists
+        if (!patients.containsKey(patientId)) {
+            return false;
+        }
+
+        Set<String> patientSet = doctorPatients.get(doctorId);
+
+        if (patientSet == null) {
+            return false;
+        }
+
+        // Returns false if patient is already linked
+        return patientSet.add(patientId);
+    }
+
+
+    // ==========================================
+    // A3: GET PATIENTS LINKED TO A DOCTOR
+    // ==========================================
+
+    public Set<String> getPatientsForDoctor(String doctorId) {
+
+        Set<String> patientSet = doctorPatients.get(doctorId);
+
+        if (patientSet == null) {
+            return new HashSet<>();
+        }
+
+        return new HashSet<>(patientSet);
     }
 }
