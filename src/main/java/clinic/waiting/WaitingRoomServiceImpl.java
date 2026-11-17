@@ -64,9 +64,9 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
         if(registry.getPatient(patientId) == null) {
             throw new IllegalArgumentException("Paciente no registrado");
         }
-
-        //Evitar pacientes duplicados
-        if(waitingIds.contains(patientId)) {
+        
+        // Evitar pacientes duplicados o en consulta
+        if(waitingIds.contains(patientId) || activeVisitIds.contains(patientId)) {
             return false;
         }
 
@@ -77,8 +77,12 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
             return true;
         }
 
-        //Manejo de emergencias pendiente
-        throw new UnsupportedOperationException("Emergencias pendientes");
+        // Añadir pacientes de emergencia por prioridad
+        emergencyQueue.add(new Emergency(patientId, emergencyLevel, arrivalCounter++));
+        waitingIds.add(patientId);
+
+        return true;
+
     }
 
     // Muestra los pacientes en orden de llegada sin eliminarlos.
