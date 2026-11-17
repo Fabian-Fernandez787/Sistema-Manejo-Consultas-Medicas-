@@ -100,7 +100,7 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             return false;
         }
 
-        // If the employee is a doctor, register it in all doctor indexes
+        // Doctors must also be added to doctor indexes
         if (e.role == Types.Role.DOCTOR) {
 
             if (!(e instanceof Types.Doctor)) {
@@ -144,12 +144,12 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         employees.put(doctor.id, doctor);
         doctors.put(doctor.id, doctor);
 
-        // Add doctor to the specialty index
+        // Update specialty index
         specialtyIndex
             .get(doctor.specialty)
             .put(doctor.id, doctor);
 
-        // A3: Create an empty patient set for this doctor
+        // A3: Create an empty patient set
         doctorPatients.put(doctor.id, new HashSet<>());
 
         return true;
@@ -191,15 +191,13 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             return false;
         }
 
-        // Remove doctor from employee registry
         employees.remove(doctorId);
 
-        // Remove doctor from specialty index
         specialtyIndex
             .get(doctor.specialty)
             .remove(doctorId);
 
-        // A3: Remove doctor's patient list
+        // Remove doctor's patient list
         doctorPatients.remove(doctorId);
 
         return true;
@@ -284,12 +282,10 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             String doctorId,
             String patientId) {
 
-        // Verify doctor exists
         if (!doctors.containsKey(doctorId)) {
             return false;
         }
 
-        // Verify patient exists
         if (!patients.containsKey(patientId)) {
             return false;
         }
@@ -300,7 +296,7 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             return false;
         }
 
-        // Returns false if patient is already linked
+        // HashSet prevents duplicate patient assignments
         return patientSet.add(patientId);
     }
 
@@ -318,5 +314,75 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         }
 
         return new HashSet<>(patientSet);
+    }
+
+
+    // ==========================================
+    // A4: LOAD INITIAL SEED DATA
+    // ==========================================
+
+    public void loadSeedData() {
+
+        // Four doctors, one per specialty
+
+        registerEmployee(new Types.Doctor(
+            "D101",
+            "General Doctor",
+            Types.Specialty.GENERAL
+        ));
+
+        registerEmployee(new Types.Doctor(
+            "D102",
+            "Pediatric Doctor",
+            Types.Specialty.PEDIATRIC
+        ));
+
+        registerEmployee(new Types.Doctor(
+            "D103",
+            "Neuro Doctor",
+            Types.Specialty.NEURO
+        ));
+
+        registerEmployee(new Types.Doctor(
+            "D104",
+            "Retina Doctor",
+            Types.Specialty.RETINA
+        ));
+
+
+        // Two nurses
+
+        registerEmployee(new Types.Employee(
+            "N101",
+            "Nurse One",
+            Types.Role.NURSE
+        ));
+
+        registerEmployee(new Types.Employee(
+            "N102",
+            "Nurse Two",
+            Types.Role.NURSE
+        ));
+
+
+        // One secretary
+
+        registerEmployee(new Types.Employee(
+            "S101",
+            "Secretary",
+            Types.Role.SECRETARY
+        ));
+
+
+        // Five patients
+
+        for (int i = 1; i <= 5; i++) {
+
+            registerPatient(new Types.Patient(
+                "P10" + i,
+                "Patient " + i,
+                "7870000000"
+            ));
+        }
     }
 }
