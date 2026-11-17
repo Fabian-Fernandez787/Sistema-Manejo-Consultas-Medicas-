@@ -85,11 +85,27 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
 
     }
 
-    // Muestra los pacientes en orden de llegada sin eliminarlos.
+    
+    // Muestra los pacientes en orden de prioridad sin eliminarlos.
     @Override
     public List<String> listWaiting() {
-        return new ArrayList<>(normalQueue);
+
+        List<String> result = new ArrayList<>();
+
+        // Copiar las emergencias para no modificar la fila original
+        PriorityQueue<Emergency> copy = new PriorityQueue<>(emergencyQueue);
+
+        // Agregar emergencias en orden de prioridad
+        while(!copy.isEmpty()) {
+            result.add(copy.poll().patientId);
+        }
+
+        // Agregar pacientes normales al final
+        result.addAll(normalQueue);
+
+        return result;
     }
+
 
     //Asigna el proximo paciente a un medico disponible
     @Override
