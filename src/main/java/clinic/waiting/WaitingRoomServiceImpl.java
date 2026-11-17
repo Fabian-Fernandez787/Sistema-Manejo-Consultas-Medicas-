@@ -19,6 +19,7 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
     private HashSet<String> activeVisitIds = new HashSet<>();
     private HashMap<String, String> patientVitals = new HashMap<>();
     private HashMap<String, String> patientNurses = new HashMap<>();
+    private HashMap<String, String> patientDoctors = new HashMap<>();
 
     public WaitingRoomServiceImpl(Interfaces.IRegistryModule registry, Interfaces.IAppointmentsModule appointments) {
 
@@ -91,6 +92,8 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
         //Eliminar al paciente de la lista de espera
         waitingIds.remove(patientId);
         activeVisitIds.add(patientId);
+        patientDoctors.put(patientId, doctorId);
+        registry.linkPatientToDoctor(doctorId, patientId);
 
         //Cambiar el estado del medico a ocupado
         registry.setDoctorStatus(doctorId, Types.DoctorStatus.BUSY);
@@ -115,10 +118,14 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
         }
 
         //Verificar que el paciente este en consulta
+        if(!activeVisitIds.contains(patientId)){
+            throw new IllegalArgumentException("Paciente no esta en consulta");
+        }
+        
         if(vitals == null || vitals.isBlank()){
             throw new IllegalArgumentException("Signos vitales invalidos");
         }
-        
+
         //Guardar los signos vitales y la enfermera
         patientVitals.put(patientId, vitals);
         patientNurses.put(patientId, nurseId);
