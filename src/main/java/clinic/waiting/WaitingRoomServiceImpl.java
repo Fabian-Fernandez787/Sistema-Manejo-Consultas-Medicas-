@@ -121,7 +121,7 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
         if(!activeVisitIds.contains(patientId)){
             throw new IllegalArgumentException("Paciente no esta en consulta");
         }
-        
+
         if(vitals == null || vitals.isBlank()){
             throw new IllegalArgumentException("Signos vitales invalidos");
         }
@@ -131,9 +131,46 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
         patientNurses.put(patientId, nurseId);
     }
 
-    
+    //Finaliza la consulta, guarda la visita y libera al medico
     @Override
     public Types.Visit finishVisit(String patientId, String doctorId, String nurseId, String notes) {
-        return null;
+        
+        //Verificar que el paciente este con ese medico
+        if(!activeVisitIds.contains(patientId) || !doctorId.equals(patientDoctors.get(patientId))) {
+            throw new IllegalArgumentException("Paciente no esta con este medico");
+        }
+
+        //Verificar que tenga signos vitales
+        if(!patientVitals.containsKey(patientId)){
+            throw new IllegalArgumentException("Signos vitales no registrados");
+        }
+
+        //Verificar que sea la enfermera registrada
+        if(!nurseId.equals(patientNurses.get(patientId))) {
+            throw new IllegalArgumentException("Enfermera incorrecta");
+        }
+
+        //Crear la visita medica
+        Types.Visit visit = new Types.Visit();
+        visit.patientId = patientId;
+        visit.doctorId = doctorId;
+        visit.nurseId = nurseId;
+        visit.timestamp = java.time.LocalDateTime.now().toString();
+        visit.vitals = patientVitals.get(patientId);
+        visit.notes = notes;
+
+        //Guardar la visita en el historial
+        appointments.addVisit(visit);
+
+        //Liberar al medico
+        registry.setDoctorStatus(doctorId, Types.DoctorStatus.AVAILABLE);
+
+        //Limpiar los datos de la consulta
+        activeVisitIds.remove(patientId);
+        patientDoctors.remove(patientId);
+        patientVitals.remove(patientId);
+        patientNurses.remove(patientId);
+
+        return visit;
     }
 }
