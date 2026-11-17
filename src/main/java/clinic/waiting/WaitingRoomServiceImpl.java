@@ -8,13 +8,37 @@ import java.util.Queue;
 import java.util.LinkedList;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.PriorityQueue;
+import java.util.Comparator;
 
 public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
+    // Guarda los datos de un paciente de emergencia.
+    private static class Emergency {
+        String patientId;
+        int level;
+        long arrivalOrder;
+
+        Emergency(String patientId, int level, long arrivalOrder) {
+            this.patientId = patientId;
+            this.level = level;
+            this.arrivalOrder = arrivalOrder;
+        }
+    }
 
     private Interfaces.IRegistryModule registry;
     private Interfaces.IAppointmentsModule appointments;
 
     private Queue<String> normalQueue = new LinkedList<>();
+
+    private long arrivalCounter = 0;
+
+    // Ordena emergencias por nivel y orden de llegada.
+    private PriorityQueue<Emergency> emergencyQueue =
+        new PriorityQueue<>(
+            Comparator.comparingInt((Emergency e) -> e.level)
+                      .thenComparingLong(e -> e.arrivalOrder)
+        );
+
     private HashSet<String> waitingIds = new HashSet<>();
     private HashSet<String> activeVisitIds = new HashSet<>();
     private HashMap<String, String> patientVitals = new HashMap<>();
