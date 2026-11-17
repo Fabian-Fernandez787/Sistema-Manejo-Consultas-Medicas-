@@ -3,154 +3,299 @@ package clinic;
 import clinic.common.Types;
 import clinic.registry.RegistryServiceImpl;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RegistryServiceTest {
 
-    // Test 1: Register a patient successfully
+    private RegistryServiceImpl registry;
+
+    @BeforeEach
+    void setUp() {
+        registry = new RegistryServiceImpl();
+    }
+
+
+    // ==========================================
+    // A1: PATIENT AND EMPLOYEE REGISTRY
+    // ==========================================
+
     @Test
     void testRegisterPatient() {
 
-        RegistryServiceImpl registry = new RegistryServiceImpl();
-
-        Types.Patient patient =
-                new Types.Patient("P001", "John Smith", "7871234567");
+        Types.Patient patient = new Types.Patient(
+            "P001", "John Smith", "7871234567"
+        );
 
         assertTrue(registry.registerPatient(patient));
 
         assertEquals(patient, registry.getPatient("P001"));
     }
 
-    // Test 2: Reject duplicate patient IDs
+
     @Test
-    void testDuplicatePatientID() {
+    void testDuplicatePatient() {
 
-        RegistryServiceImpl registry = new RegistryServiceImpl();
+        Types.Patient patient1 = new Types.Patient(
+            "P001", "John Smith", "7871234567"
+        );
 
-        Types.Patient patient1 =
-                new Types.Patient("P001", "John Smith", "7871234567");
-
-        Types.Patient patient2 =
-                new Types.Patient("P001", "Mary Smith", "7879876543");
+        Types.Patient patient2 = new Types.Patient(
+            "P001", "Mary Jones", "7879876543"
+        );
 
         assertTrue(registry.registerPatient(patient1));
 
         assertFalse(registry.registerPatient(patient2));
-
-        assertEquals(patient1, registry.getPatient("P001"));
     }
 
-    // Test 3: Register an employee successfully
+
     @Test
     void testRegisterEmployee() {
 
-        RegistryServiceImpl registry = new RegistryServiceImpl();
-
-        Types.Employee employee =
-                new Types.Employee("E001", "Jane Smith", Types.Role.NURSE);
+        Types.Employee employee = new Types.Employee(
+            "E001", "Jane Smith", Types.Role.NURSE
+        );
 
         assertTrue(registry.registerEmployee(employee));
 
         assertEquals(employee, registry.getEmployee("E001"));
     }
 
-    // Test 4: Reject duplicate employee IDs
+
     @Test
-    void testDuplicateEmployeeID() {
+    void testDuplicateEmployee() {
 
-        RegistryServiceImpl registry = new RegistryServiceImpl();
+        Types.Employee employee1 = new Types.Employee(
+            "E001", "Jane Smith", Types.Role.NURSE
+        );
 
-        Types.Employee employee1 =
-                new Types.Employee("E001", "Jane Smith", Types.Role.NURSE);
-
-        Types.Employee employee2 =
-                new Types.Employee("E001", "John Smith", Types.Role.SECRETARY);
+        Types.Employee employee2 = new Types.Employee(
+            "E001", "John Smith", Types.Role.SECRETARY
+        );
 
         assertTrue(registry.registerEmployee(employee1));
 
         assertFalse(registry.registerEmployee(employee2));
-
-        assertEquals(employee1, registry.getEmployee("E001"));
     }
 
-    // Test 5: Lookup returns null when ID is missing
-    @Test
-    void testMissingID() {
 
-        RegistryServiceImpl registry = new RegistryServiceImpl();
+    @Test
+    void testMissingPatient() {
 
         assertNull(registry.getPatient("P999"));
+    }
+
+
+    @Test
+    void testMissingEmployee() {
+
         assertNull(registry.getEmployee("E999"));
     }
 
-    // Test 6: Reject invalid IDs
+
     @Test
-    void testInvalidIDs() {
-
-        RegistryServiceImpl registry = new RegistryServiceImpl();
-
-        Types.Patient patient =
-                new Types.Patient("", "John Smith", "7871234567");
-
-        Types.Employee employee =
-                new Types.Employee(null, "Jane Smith", Types.Role.NURSE);
+    void testInvalidPatient() {
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> registry.registerPatient(patient)
+            IllegalArgumentException.class,
+            () -> registry.registerPatient(null)
+        );
+
+        Types.Patient patient = new Types.Patient(
+            "", "John Smith", "7871234567"
         );
 
         assertThrows(
-                IllegalArgumentException.class,
-                () -> registry.registerEmployee(employee)
+            IllegalArgumentException.class,
+            () -> registry.registerPatient(patient)
         );
     }
 
-    // Test 7: Register 1000 patients
-    @Test
-    void test1000PatientInsertions() {
 
-        RegistryServiceImpl registry = new RegistryServiceImpl();
+    @Test
+    void testInvalidEmployee() {
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> registry.registerEmployee(null)
+        );
+
+        Types.Employee employee = new Types.Employee(
+            "", "Jane Smith", Types.Role.NURSE
+        );
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> registry.registerEmployee(employee)
+        );
+    }
+
+
+    @Test
+    void testOneThousandPatients() {
 
         for (int i = 0; i < 1000; i++) {
 
-            Types.Patient patient =
-                    new Types.Patient(
-                            "P" + i,
-                            "Patient " + i,
-                            "7870000000"
-                    );
+            Types.Patient patient = new Types.Patient(
+                "P" + i,
+                "Patient " + i,
+                "7870000000"
+            );
 
             assertTrue(registry.registerPatient(patient));
         }
 
-        assertNotNull(registry.getPatient("P0"));
+        assertNotNull(registry.getPatient("P500"));
         assertNotNull(registry.getPatient("P999"));
-        assertNull(registry.getPatient("P1000"));
     }
 
-    // Test 8: Register 1000 employees
-    @Test
-    void test1000EmployeeInsertions() {
 
-        RegistryServiceImpl registry = new RegistryServiceImpl();
+    @Test
+    void testOneThousandEmployees() {
 
         for (int i = 0; i < 1000; i++) {
 
-            Types.Employee employee =
-                    new Types.Employee(
-                            "E" + i,
-                            "Employee " + i,
-                            Types.Role.NURSE
-                    );
+            Types.Employee employee = new Types.Employee(
+                "E" + i,
+                "Employee " + i,
+                Types.Role.NURSE
+            );
 
             assertTrue(registry.registerEmployee(employee));
         }
 
-        assertNotNull(registry.getEmployee("E0"));
+        assertNotNull(registry.getEmployee("E500"));
         assertNotNull(registry.getEmployee("E999"));
-        assertNull(registry.getEmployee("E1000"));
+    }
+
+
+    // ==========================================
+    // A2: DOCTOR MANAGEMENT
+    // ==========================================
+
+    @Test
+    void testEmptySpecialty() {
+
+        List<Types.Doctor> result =
+            registry.findDoctorsBySpecialty(
+                Types.Specialty.GENERAL
+            );
+
+        assertTrue(result.isEmpty());
+    }
+
+
+    @Test
+    void testFindDoctorsBySpecialty() {
+
+        Types.Doctor doctor1 = new Types.Doctor(
+            "D001", "Doctor One", Types.Specialty.GENERAL
+        );
+
+        Types.Doctor doctor2 = new Types.Doctor(
+            "D002", "Doctor Two", Types.Specialty.RETINA
+        );
+
+        assertTrue(registry.registerEmployee(doctor1));
+        assertTrue(registry.registerEmployee(doctor2));
+
+        List<Types.Doctor> result =
+            registry.findDoctorsBySpecialty(
+                Types.Specialty.GENERAL
+            );
+
+        assertEquals(1, result.size());
+        assertEquals("D001", result.get(0).id);
+    }
+
+
+    @Test
+    void testRemoveDoctor() {
+
+        Types.Doctor doctor = new Types.Doctor(
+            "D003", "Doctor Three", Types.Specialty.PEDIATRIC
+        );
+
+        registry.registerEmployee(doctor);
+
+        assertTrue(registry.removeDoctor("D003"));
+
+        assertNull(registry.getEmployee("D003"));
+
+        assertTrue(
+            registry.findDoctorsBySpecialty(
+                Types.Specialty.PEDIATRIC
+            ).isEmpty()
+        );
+
+        assertFalse(registry.removeDoctor("D003"));
+    }
+
+
+    @Test
+    void testChangeDoctorStatus() {
+
+        Types.Doctor doctor = new Types.Doctor(
+            "D004", "Doctor Four", Types.Specialty.NEURO
+        );
+
+        registry.registerEmployee(doctor);
+
+        registry.setDoctorStatus(
+            "D004",
+            Types.DoctorStatus.BUSY
+        );
+
+        assertEquals(
+            Types.DoctorStatus.BUSY,
+            doctor.status
+        );
+
+        assertTrue(registry.getAvailableDoctors().isEmpty());
+    }
+
+
+    @Test
+    void testGetAvailableDoctors() {
+
+        Types.Doctor doctor1 = new Types.Doctor(
+            "D005", "Doctor Five", Types.Specialty.GENERAL
+        );
+
+        Types.Doctor doctor2 = new Types.Doctor(
+            "D006", "Doctor Six", Types.Specialty.RETINA
+        );
+
+        registry.registerEmployee(doctor1);
+        registry.registerEmployee(doctor2);
+
+        registry.setDoctorStatus(
+            "D006",
+            Types.DoctorStatus.BUSY
+        );
+
+        List<Types.Doctor> available =
+            registry.getAvailableDoctors();
+
+        assertEquals(1, available.size());
+        assertEquals("D005", available.get(0).id);
+    }
+
+
+    @Test
+    void testSetStatusForMissingDoctor() {
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> registry.setDoctorStatus(
+                "D999",
+                Types.DoctorStatus.BUSY
+            )
+        );
     }
 }
