@@ -15,16 +15,18 @@ public class RegistryServiceTest {
 
     private RegistryServiceImpl registry;
 
+    // Creates a new registry before each test.
+    // Calls: RegistryServiceImpl constructor.
+    // Called by: JUnit before executing each test method.
     @BeforeEach
     void setUp() {
+
         registry = new RegistryServiceImpl();
     }
 
-
-    // ==========================================
-    // A1: PATIENT AND EMPLOYEE REGISTRY
-    // ==========================================
-
+    // Registers a patient and verifies that the patient can be retrieved.
+    // Calls: registerPatient(), getPatient().
+    // Called by: JUnit when executing this test.
     @Test
     void testRegisterPatient() {
 
@@ -36,7 +38,9 @@ public class RegistryServiceTest {
         assertEquals(patient, registry.getPatient("P001"));
     }
 
-
+    // Verifies that the registry rejects a patient with an existing ID.
+    // Calls: registerPatient().
+    // Called by: JUnit when executing this test.
     @Test
     void testDuplicatePatient() {
 
@@ -52,7 +56,9 @@ public class RegistryServiceTest {
         assertFalse(registry.registerPatient(patient2));
     }
 
-
+    // Registers an employee and verifies that the employee can be retrieved.
+    // Calls: registerEmployee(), getEmployee().
+    // Called by: JUnit when executing this test.
     @Test
     void testRegisterEmployee() {
 
@@ -64,7 +70,9 @@ public class RegistryServiceTest {
         assertEquals(employee, registry.getEmployee("E001"));
     }
 
-
+    // Verifies that the registry rejects an employee with an existing ID.
+    // Calls: registerEmployee().
+    // Called by: JUnit when executing this test.
     @Test
     void testDuplicateEmployee() {
 
@@ -80,21 +88,27 @@ public class RegistryServiceTest {
         assertFalse(registry.registerEmployee(employee2));
     }
 
-
+    // Verifies that searching for a nonexistent patient returns null.
+    // Calls: getPatient().
+    // Called by: JUnit when executing this test.
     @Test
     void testMissingPatient() {
 
         assertNull(registry.getPatient("P999"));
     }
 
-
+    // Verifies that searching for a nonexistent employee returns null.
+    // Calls: getEmployee().
+    // Called by: JUnit when executing this test.
     @Test
     void testMissingEmployee() {
 
         assertNull(registry.getEmployee("E999"));
     }
 
-
+    // Verifies that registering a null patient or an empty ID throws an exception.
+    // Calls: registerPatient().
+    // Called by: JUnit when executing this test.
     @Test
     void testInvalidPatient() {
 
@@ -113,7 +127,9 @@ public class RegistryServiceTest {
         );
     }
 
-
+    // Verifies that registering a null employee or an empty ID throws an exception.
+    // Calls: registerEmployee().
+    // Called by: JUnit when executing this test.
     @Test
     void testInvalidEmployee() {
 
@@ -132,7 +148,9 @@ public class RegistryServiceTest {
         );
     }
 
-
+    // Verifies that the registry can store and retrieve 1,000 patients.
+    // Calls: registerPatient(), getPatient().
+    // Called by: JUnit when executing this test.
     @Test
     void testOneThousandPatients() {
 
@@ -151,7 +169,9 @@ public class RegistryServiceTest {
         assertNotNull(registry.getPatient("P999"));
     }
 
-
+    // Verifies that the registry can store and retrieve 1,000 employees.
+    // Calls: registerEmployee(), getEmployee().
+    // Called by: JUnit when executing this test.
     @Test
     void testOneThousandEmployees() {
 
@@ -170,11 +190,9 @@ public class RegistryServiceTest {
         assertNotNull(registry.getEmployee("E999"));
     }
 
-
-    // ==========================================
-    // A2: DOCTOR MANAGEMENT
-    // ==========================================
-
+    // Verifies that searching an empty specialty returns an empty list.
+    // Calls: findDoctorsBySpecialty().
+    // Called by: JUnit when executing this test.
     @Test
     void testEmptySpecialty() {
 
@@ -186,7 +204,9 @@ public class RegistryServiceTest {
         assertTrue(result.isEmpty());
     }
 
-
+    // Verifies that doctors are returned under the correct specialty.
+    // Calls: registerEmployee(), findDoctorsBySpecialty().
+    // Called by: JUnit when executing this test.
     @Test
     void testFindDoctorsBySpecialty() {
 
@@ -210,7 +230,9 @@ public class RegistryServiceTest {
         assertEquals("D001", result.get(0).id);
     }
 
-
+    // Verifies that removing a doctor also removes the doctor from the employee and specialty registries.
+    // Calls: registerEmployee(), removeDoctor(), getEmployee(), findDoctorsBySpecialty().
+    // Called by: JUnit when executing this test.
     @Test
     void testRemoveDoctor() {
 
@@ -233,7 +255,9 @@ public class RegistryServiceTest {
         assertFalse(registry.removeDoctor("D003"));
     }
 
-
+    // Verifies that changing a doctor's status to BUSY updates the doctor object.
+    // Calls: registerEmployee(), setDoctorStatus(), getAvailableDoctors().
+    // Called by: JUnit when executing this test.
     @Test
     void testChangeDoctorStatus() {
 
@@ -256,7 +280,9 @@ public class RegistryServiceTest {
         assertTrue(registry.getAvailableDoctors().isEmpty());
     }
 
-
+    // Verifies that only doctors with AVAILABLE status are returned.
+    // Calls: registerEmployee(), setDoctorStatus(), getAvailableDoctors().
+    // Called by: JUnit when executing this test.
     @Test
     void testGetAvailableDoctors() {
 
@@ -283,7 +309,9 @@ public class RegistryServiceTest {
         assertEquals("D005", available.get(0).id);
     }
 
-
+    // Verifies that changing the status of a nonexistent doctor throws an exception.
+    // Calls: setDoctorStatus().
+    // Called by: JUnit when executing this test.
     @Test
     void testSetStatusForMissingDoctor() {
 
@@ -296,11 +324,9 @@ public class RegistryServiceTest {
         );
     }
 
-
-    // ==========================================
-    // A3: DOCTOR'S PATIENT LIST - NO DUPLICATES
-    // ==========================================
-
+    // Verifies that an existing patient can be linked to an existing doctor.
+    // Calls: registerEmployee(), registerPatient(), linkPatientToDoctor().
+    // Called by: JUnit when executing this test.
     @Test
     void testLinkPatientToDoctor() {
 
@@ -320,7 +346,9 @@ public class RegistryServiceTest {
         );
     }
 
-
+    // Verifies that the same patient cannot be linked twice to the same doctor.
+    // Calls: registerEmployee(), registerPatient(), linkPatientToDoctor().
+    // Called by: JUnit when executing this test.
     @Test
     void testSamePatientLinkedTwiceToSameDoctor() {
 
@@ -344,7 +372,9 @@ public class RegistryServiceTest {
         );
     }
 
-
+    // Verifies that a patient cannot be linked to a doctor that does not exist.
+    // Calls: registerPatient(), linkPatientToDoctor().
+    // Called by: JUnit when executing this test.
     @Test
     void testLinkPatientToMissingDoctor() {
 
@@ -359,7 +389,9 @@ public class RegistryServiceTest {
         );
     }
 
-
+    // Verifies that a nonexistent patient cannot be linked to an existing doctor.
+    // Calls: registerEmployee(), linkPatientToDoctor().
+    // Called by: JUnit when executing this test.
     @Test
     void testLinkMissingPatientToDoctor() {
 
@@ -374,7 +406,9 @@ public class RegistryServiceTest {
         );
     }
 
-
+    // Verifies that the patient list of a doctor contains the linked patient.
+    // Calls: registerEmployee(), registerPatient(), linkPatientToDoctor(), getPatientsForDoctor().
+    // Called by: JUnit when executing this test.
     @Test
     void testGetPatientsForDoctor() {
 
@@ -398,17 +432,14 @@ public class RegistryServiceTest {
         assertTrue(result.contains("P011"));
     }
 
-
-    // ==========================================
-    // A4: INITIAL SEED DATA
-    // ==========================================
-
+    // Loads the initial clinic data and verifies that all doctors, employees, and patients are registered.
+    // Calls: loadSeedData(), findDoctorsBySpecialty(), getEmployee(), getPatient(), getAvailableDoctors().
+    // Called by: JUnit when executing this test.
     @Test
     void testLoadSeedData() {
 
         registry.loadSeedData();
 
-        // Verify four doctors
         assertEquals(
             1,
             registry.findDoctorsBySpecialty(
@@ -437,49 +468,49 @@ public class RegistryServiceTest {
             ).size()
         );
 
-        // Verify nurses and secretary
         assertNotNull(registry.getEmployee("N101"));
         assertNotNull(registry.getEmployee("N102"));
         assertNotNull(registry.getEmployee("S101"));
 
-        // Verify five patients
         for (int i = 1; i <= 5; i++) {
             assertNotNull(registry.getPatient("P10" + i));
         }
 
-        // Verify all four doctors are available
         assertEquals(4, registry.getAvailableDoctors().size());
     }
 
-
+    // Verifies that loading the initial data more than once does not create duplicate records.
+    // Calls: loadSeedData(), findDoctorsBySpecialty(), getPatient(), getAvailableDoctors().
+    // Called by: JUnit when executing this test.
     @Test
     void testSeedDataDoesNotCreateDuplicates() {
 
         registry.loadSeedData();
-
-        // Loading the same seed data again should not
-        // create duplicate patients or employees.
         registry.loadSeedData();
 
-        assertEquals(1,
+        assertEquals(
+            1,
             registry.findDoctorsBySpecialty(
                 Types.Specialty.GENERAL
             ).size()
         );
 
-        assertEquals(1,
+        assertEquals(
+            1,
             registry.findDoctorsBySpecialty(
                 Types.Specialty.PEDIATRIC
             ).size()
         );
 
-        assertEquals(1,
+        assertEquals(
+            1,
             registry.findDoctorsBySpecialty(
                 Types.Specialty.NEURO
             ).size()
         );
 
-        assertEquals(1,
+        assertEquals(
+            1,
             registry.findDoctorsBySpecialty(
                 Types.Specialty.RETINA
             ).size()
