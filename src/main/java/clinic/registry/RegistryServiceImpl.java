@@ -13,35 +13,25 @@ import java.util.Set;
 
 public class RegistryServiceImpl implements Interfaces.IRegistryModule {
 
-    // ==========================================
-    // A1: PATIENT AND EMPLOYEE REGISTRY
-    // ==========================================
-
+    // Stores patients using their unique IDs.
     private final Map<String, Types.Patient> patients;
+
+    // Stores all employees using their unique IDs.
     private final Map<String, Types.Employee> employees;
 
-
-    // ==========================================
-    // A2: DOCTOR MANAGEMENT
-    // ==========================================
-
+    // Stores doctors using their unique IDs.
     private final Map<String, Types.Doctor> doctors;
 
+    // Organizes doctors according to their specialties.
     private final Map<Types.Specialty, Map<String, Types.Doctor>>
             specialtyIndex;
 
-
-    // ==========================================
-    // A3: DOCTOR'S PATIENT LIST
-    // ==========================================
-
+    // Stores the patient IDs assigned to each doctor.
     private final Map<String, Set<String>> doctorPatients;
 
-
-    // ==========================================
-    // CONSTRUCTOR
-    // ==========================================
-
+    // Initializes all registries and creates an empty index for each specialty.
+    // Calls: HashMap, EnumMap.
+    // Called by: The program when creating a RegistryServiceImpl object.
     public RegistryServiceImpl() {
 
         patients = new HashMap<>();
@@ -53,17 +43,14 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
 
         doctorPatients = new HashMap<>();
 
-        // Initialize all four specialties
         for (Types.Specialty specialty : Types.Specialty.values()) {
             specialtyIndex.put(specialty, new HashMap<>());
         }
     }
 
-
-    // ==========================================
-    // A1: REGISTER PATIENT
-    // ==========================================
-
+    // Registers a patient after validating the patient and checking for duplicate IDs.
+    // Calls: patients.containsKey(), patients.put().
+    // Called by: The CLI or another module when registering a patient.
     @Override
     public boolean registerPatient(Types.Patient p) {
 
@@ -80,11 +67,9 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         return true;
     }
 
-
-    // ==========================================
-    // A1 AND A2: REGISTER EMPLOYEE
-    // ==========================================
-
+    // Registers an employee and sends doctor objects to the doctor registration method.
+    // Calls: addDoctor(), employees.containsKey(), employees.put().
+    // Called by: The CLI or another module when registering an employee.
     @Override
     public boolean registerEmployee(Types.Employee e) {
 
@@ -100,7 +85,6 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             return false;
         }
 
-        // Doctors must also be added to doctor indexes
         if (e.role == Types.Role.DOCTOR) {
 
             if (!(e instanceof Types.Doctor)) {
@@ -117,11 +101,9 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         return true;
     }
 
-
-    // ==========================================
-    // A2: ADD DOCTOR
-    // ==========================================
-
+    // Registers a doctor in the employee registry, doctor registry, specialty index, and patient list.
+    // Calls: employees.put(), doctors.put(), specialtyIndex.get(), doctorPatients.put().
+    // Called by: registerEmployee() when the employee has the DOCTOR role.
     public boolean addDoctor(Types.Doctor doctor) {
 
         if (doctor == null ||
@@ -144,44 +126,36 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         employees.put(doctor.id, doctor);
         doctors.put(doctor.id, doctor);
 
-        // Update specialty index
         specialtyIndex
             .get(doctor.specialty)
             .put(doctor.id, doctor);
 
-        // A3: Create an empty patient set
         doctorPatients.put(doctor.id, new HashSet<>());
 
         return true;
     }
 
-
-    // ==========================================
-    // A1: GET PATIENT
-    // ==========================================
-
+    // Searches for a patient using the patient's ID and returns null if the patient does not exist.
+    // Calls: patients.get().
+    // Called by: The CLI or another module when retrieving a patient.
     @Override
     public Types.Patient getPatient(String id) {
 
         return patients.get(id);
     }
 
-
-    // ==========================================
-    // A1: GET EMPLOYEE
-    // ==========================================
-
+    // Searches for an employee using the employee's ID and returns null if the employee does not exist.
+    // Calls: employees.get().
+    // Called by: The CLI or another module when retrieving an employee.
     @Override
     public Types.Employee getEmployee(String id) {
 
         return employees.get(id);
     }
 
-
-    // ==========================================
-    // A2 AND A3: REMOVE DOCTOR
-    // ==========================================
-
+    // Removes a doctor from the employee registry, doctor registry, specialty index, and patient list.
+    // Calls: doctors.remove(), employees.remove(), specialtyIndex.get(), doctorPatients.remove().
+    // Called by: The CLI or another module when removing a doctor.
     @Override
     public boolean removeDoctor(String doctorId) {
 
@@ -197,17 +171,14 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             .get(doctor.specialty)
             .remove(doctorId);
 
-        // Remove doctor's patient list
         doctorPatients.remove(doctorId);
 
         return true;
     }
 
-
-    // ==========================================
-    // A2: FIND DOCTORS BY SPECIALTY
-    // ==========================================
-
+    // Returns all doctors registered under the requested specialty.
+    // Calls: specialtyIndex.get(), result.addAll().
+    // Called by: The CLI or another module when searching doctors by specialty.
     @Override
     public List<Types.Doctor> findDoctorsBySpecialty(
             Types.Specialty spec) {
@@ -228,11 +199,9 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         return result;
     }
 
-
-    // ==========================================
-    // A2: GET AVAILABLE DOCTORS
-    // ==========================================
-
+    // Returns a list containing only doctors whose status is AVAILABLE.
+    // Calls: doctors.values(), availableDoctors.add().
+    // Called by: The CLI or another module when requesting available doctors.
     @Override
     public List<Types.Doctor> getAvailableDoctors() {
 
@@ -249,11 +218,9 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         return availableDoctors;
     }
 
-
-    // ==========================================
-    // A2: SET DOCTOR STATUS
-    // ==========================================
-
+    // Changes the status of an existing doctor to AVAILABLE or BUSY.
+    // Calls: doctors.get().
+    // Called by: The CLI or another module when updating a doctor's status.
     @Override
     public void setDoctorStatus(
             String doctorId,
@@ -272,11 +239,9 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         doctor.status = status;
     }
 
-
-    // ==========================================
-    // A3: LINK PATIENT TO DOCTOR
-    // ==========================================
-
+    // Links an existing patient to an existing doctor without allowing duplicate assignments.
+    // Calls: doctors.containsKey(), patients.containsKey(), doctorPatients.get(), patientSet.add().
+    // Called by: The CLI or another module when assigning a patient to a doctor.
     @Override
     public boolean linkPatientToDoctor(
             String doctorId,
@@ -296,15 +261,12 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             return false;
         }
 
-        // HashSet prevents duplicate patient assignments
         return patientSet.add(patientId);
     }
 
-
-    // ==========================================
-    // A3: GET PATIENTS LINKED TO A DOCTOR
-    // ==========================================
-
+    // Returns a copy of the patient IDs assigned to a doctor.
+    // Calls: doctorPatients.get().
+    // Called by: Tests or other code that needs to inspect a doctor's patient list.
     public Set<String> getPatientsForDoctor(String doctorId) {
 
         Set<String> patientSet = doctorPatients.get(doctorId);
@@ -316,14 +278,10 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
         return new HashSet<>(patientSet);
     }
 
-
-    // ==========================================
-    // A4: LOAD INITIAL SEED DATA
-    // ==========================================
-
+    // Loads the initial doctors, nurses, secretary, and patients into the registries.
+    // Calls: registerEmployee(), registerPatient().
+    // Called by: The main program during startup when loading initial data.
     public void loadSeedData() {
-
-        // Four doctors, one per specialty
 
         registerEmployee(new Types.Doctor(
             "D101",
@@ -349,9 +307,6 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             Types.Specialty.RETINA
         ));
 
-
-        // Two nurses
-
         registerEmployee(new Types.Employee(
             "N101",
             "Nurse One",
@@ -364,17 +319,11 @@ public class RegistryServiceImpl implements Interfaces.IRegistryModule {
             Types.Role.NURSE
         ));
 
-
-        // One secretary
-
         registerEmployee(new Types.Employee(
             "S101",
             "Secretary",
             Types.Role.SECRETARY
         ));
-
-
-        // Five patients
 
         for (int i = 1; i <= 5; i++) {
 
