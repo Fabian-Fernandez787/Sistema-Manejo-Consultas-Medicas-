@@ -1,58 +1,30 @@
 package clinic.cli;
 
-import clinic.appointments.AppointmentManager;
-import clinic.common.Types;
-import clinic.registry.RegistryServiceImpl;
-import clinic.waiting.WaitingRoomServiceImpl;
 import java.util.Scanner;
 
 public class Main {
 
-    // Lee un dato escrito en la consola.
-    private static String read(Scanner sc, String message) {
-        System.out.print(message);
-        return sc.nextLine().trim();
-    }
-
-    // Muestra el menu principal del sistema.
-    private static void showMenu() {
-        System.out.println("\n=== SISTEMA DE CONSULTAS MEDICAS ===");
-        System.out.println("1. Registrar paciente");
-        System.out.println("2. Registrar enfermera o secretario");
-        System.out.println("3. Ver medicos disponibles");
-        System.out.println("4. Buscar medicos por especialidad");
-        System.out.println("5. Registrar llegada de paciente");
-        System.out.println("6. Anadir paciente a sala de espera");
-        System.out.println("7. Programar cita");
-        System.out.println("8. Llamar proximo paciente");
-        System.out.println("9. Registrar signos vitales y finalizar visita");
-        System.out.println("10. Cancelar cita");
-        System.out.println("11. Ver citas de hoy");
-        System.out.println("12. Mostrar sala de espera");
-        System.out.println("13. Ver historial de un paciente");
-        System.out.println("14. Ver visitas recientes");
-        System.out.println("15. Ver pacientes asociados a un medico");
+    // Displays the mode selection menu
+    // Calls: System.out.println()
+    // Called by: main()
+    private static void showModeMenu() {
+        System.out.println("\n=== SELECCIONAR MODO DE EJECUCION ===");
+        System.out.println("1. Modo manual (ingresar datos paso a paso)");
+        System.out.println("2. Modo automatico (datos y acciones de prueba)");
         System.out.println("0. Salir");
     }
 
-    // Ejecuta las opciones de los tres modulos.
+    // Lets the user choose between ManualMode and AutomaticMode
+    // Calls: Scanner(), showModeMenu(), sc.nextLine(), trim(), Integer.parseInt(), ManualMode.run(), AutomaticMode.run(), sc.close()
+    // Called by: JVM when starting the application
     public static void main(String[] args) {
-
-        RegistryServiceImpl registry = new RegistryServiceImpl();
-        AppointmentManager appointments = new AppointmentManager();
-
-        WaitingRoomServiceImpl waiting =
-                new WaitingRoomServiceImpl(registry, appointments);
-
-        // Cargar datos iniciales.
-        registry.loadSeedData();
-
         Scanner sc = new Scanner(System.in);
-        int option = -1;
+        int mode = -1;
 
-        while (option != 0) {
-
-            showMenu();
+        while (mode != 0) {
+            showModeMenu();
+            System.out.print("Seleccione un modo: ");
+            String input = sc.nextLine().trim();
 
             try {
                 option = Integer.parseInt(read(sc, "Opcion: "));
@@ -65,11 +37,9 @@ public class Main {
                         String name = read(sc, "Nombre (Ej: Jose Pérez): ");
                         String phone = read(sc, "Telefono (Ej: 1234567890): ");
 
-                        boolean added = registry.registerPatient(
-                                new Types.Patient(id, name, phone));
-
-                        System.out.println(added ?
-                                "Paciente registrado" : "ID ya registrado");
+                switch (mode) {
+                    case 1:
+                        ManualMode.run(sc);
                         break;
                     }
 
@@ -93,14 +63,8 @@ public class Main {
                         System.out.println(added ?
                                 "Empleado registrado" : "ID ya registrado");
                         break;
-                    }
-
-                    case 3: {
-                        // Mostrar medicos disponibles.
-                        for (Types.Doctor d : registry.getAvailableDoctors()) {
-                            System.out.println(
-                                    d.id + " - " + d.name + " - " + d.specialty);
-                        }
+                    case 0:
+                        System.out.println("Hasta luego.");
                         break;
                     }
 
@@ -276,11 +240,8 @@ public class Main {
                         break;
                     }
                 }
-
-            } catch (IllegalArgumentException |
-                     UnsupportedOperationException e) {
-
-                System.out.println("Error: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada invalida. Ingrese un numero.");
             }
         }
 
