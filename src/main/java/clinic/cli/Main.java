@@ -61,9 +61,9 @@ public class Main {
 
                     case 1: {
                         // Registrar paciente.
-                        String id = read(sc, "ID del paciente: ");
-                        String name = read(sc, "Nombre: ");
-                        String phone = read(sc, "Telefono: ");
+                        String id = read(sc, "ID del paciente (Ej: P001): ");
+                        String name = read(sc, "Nombre (Ej: Jose Pérez): ");
+                        String phone = read(sc, "Telefono (Ej: 1234567890): ");
 
                         boolean added = registry.registerPatient(
                                 new Types.Patient(id, name, phone));
@@ -75,8 +75,8 @@ public class Main {
 
                     case 2: {
                         // Registrar enfermera o secretario.
-                        String id = read(sc, "ID del empleado: ");
-                        String name = read(sc, "Nombre: ");
+                        String id = read(sc, "ID del empleado (Ej: E001): ");
+                        String name = read(sc, "Nombre (Ej: Maria García): ");
                         String role = read(sc,
                                 "Rol (NURSE/SECRETARY): ").toUpperCase();
 
@@ -122,7 +122,7 @@ public class Main {
                     case 5:
                     case 6: {
                         // Registrar paciente en sala de espera.
-                        String patientId = read(sc, "ID del paciente: ");
+                        String patientId = read(sc, "ID del paciente (Ej: P001): ");
 
                         int level = Integer.parseInt(read(sc,
                                 "Emergencia (0 normal, 1-3 emergencia): "));
@@ -137,8 +137,8 @@ public class Main {
 
                     case 7: {
                         // Programar cita.
-                        String patientId = read(sc, "ID del paciente: ");
-                        String doctorId = read(sc, "ID del medico: ");
+                        String patientId = read(sc, "ID del paciente (Ej: P001): ");
+                        String doctorId = read(sc, "ID del medico (Ej: D001): ");
 
                         if (registry.getPatient(patientId) == null ||
                                 !(registry.getEmployee(doctorId)
@@ -162,7 +162,7 @@ public class Main {
 
                     case 8: {
                         // Llamar al proximo paciente.
-                        String doctorId = read(sc, "ID del medico: ");
+                        String doctorId = read(sc, "ID del medico (Ej: D001): ");
 
                         String patientId = waiting.callNext(doctorId);
 
@@ -174,9 +174,9 @@ public class Main {
 
                     case 9: {
                         // Registrar signos vitales y finalizar visita.
-                        String patientId = read(sc, "ID del paciente: ");
-                        String doctorId = read(sc, "ID del medico: ");
-                        String nurseId = read(sc, "ID de la enfermera: ");
+                        String patientId = read(sc, "ID del paciente (Ej: P001): ");
+                        String doctorId = read(sc, "ID del medico (Ej: D001): ");
+                        String nurseId = read(sc, "ID de la enfermera (Ej: N001): ");
                         String vitals = read(sc, "Signos vitales: ");
                         String notes = read(sc, "Notas: ");
 
@@ -193,7 +193,7 @@ public class Main {
 
                     case 10: {
                         // Cancelar cita.
-                        String id = read(sc, "ID de la cita: ");
+                        String id = read(sc, "ID de la cita (Ej: C001): ");
 
                         boolean cancelled =
                                 appointments.cancelAppointment(id);
@@ -227,7 +227,7 @@ public class Main {
 
                     case 13: {
                         // Mostrar historial de paciente.
-                        String id = read(sc, "ID del paciente: ");
+                        String id = read(sc, "ID del paciente (Ej: P001): ");
 
                         for (Types.Visit v : appointments.getHistory(id)) {
 
@@ -259,7 +259,7 @@ public class Main {
 
                     case 15: {
                         // Mostrar pacientes asociados a un medico.
-                        String id = read(sc, "ID del medico: ");
+                        String id = read(sc, "ID del medico (Ej: D001): ");
 
                         System.out.println(
                                 registry.getPatientsForDoctor(id));
