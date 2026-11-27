@@ -21,23 +21,26 @@ public class ManualMode {
     // Calls: System.out.println()
     // Called by: run()
     private static void showMenu() {
-        System.out.println("\n=== SISTEMA DE CONSULTAS MEDICAS (MODO MANUAL) ===");
+        System.out.println("\n=== SISTEMA DE CONSULTAS MEDICAS ===");
         System.out.println("1. Registrar paciente");
         System.out.println("2. Registrar enfermera o secretario");
-        System.out.println("3. Ver medicos disponibles");
-        System.out.println("4. Buscar medicos por especialidad");
-        System.out.println("5. Registrar llegada de paciente");
-        System.out.println("6. Anadir paciente a sala de espera");
-        System.out.println("7. Programar cita");
-        System.out.println("8. Llamar proximo paciente");
-        System.out.println("9. Registrar signos vitales y finalizar visita");
-        System.out.println("10. Cancelar cita");
-        System.out.println("11. Ver citas de hoy");
-        System.out.println("12. Mostrar sala de espera");
-        System.out.println("13. Ver historial de un paciente");
-        System.out.println("14. Ver visitas recientes");
-        System.out.println("15. Ver pacientes asociados a un medico");
-        System.out.println("0. Regresar a seleccion de modo");
+        System.out.println("3. Registrar medico");
+        System.out.println("4. Eliminar medico");
+        System.out.println("5. Buscar empleado por ID");
+        System.out.println("6. Ver medicos disponibles");
+        System.out.println("7. Buscar medicos por especialidad");
+        System.out.println("8. Registrar llegada de paciente");
+        System.out.println("9. Anadir paciente a sala de espera");
+        System.out.println("10. Programar cita");
+        System.out.println("11. Llamar proximo paciente");
+        System.out.println("12. Registrar signos vitales y finalizar visita");
+        System.out.println("13. Cancelar cita");
+        System.out.println("14. Ver citas de hoy");
+        System.out.println("15. Mostrar sala de espera");
+        System.out.println("16. Ver historial de un paciente");
+        System.out.println("17. Ver visitas recientes");
+        System.out.println("18. Ver pacientes asociados a un medico");
+        System.out.println("0. Salir");
     }
 
     // Runs the manual CLI loop using the shared Scanner
@@ -273,7 +276,7 @@ public class ManualMode {
                     }
 
                     case 0: {
-                        System.out.println("Regresando a seleccion de modo...");
+                        System.out.println("Hasta luego");
                         break;
                     }
 

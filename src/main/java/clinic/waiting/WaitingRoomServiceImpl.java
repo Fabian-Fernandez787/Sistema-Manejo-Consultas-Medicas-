@@ -47,14 +47,24 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
 
     public WaitingRoomServiceImpl(Interfaces.IRegistryModule registry, Interfaces.IAppointmentsModule appointments) {
 
-        this.registry = registry;
-        this.appointments = appointments;
+    // Verificar que los modulos existan
+    if (registry == null || appointments == null) {
+        throw new IllegalArgumentException("Modulos invalidos");
     }
+
+    this.registry = registry;
+    this.appointments = appointments;
+}
 
     // Registra pacientes en la sala de espera.
     @Override
     public boolean checkIn(String patientId, int emergencyLevel) {
-        
+
+        // Verificar que el ID sea valido
+        if (patientId == null || patientId.isBlank()) {
+            throw new IllegalArgumentException("ID de paciente invalido");
+        }
+
         //Verificar que el nivel sea valido
         if(emergencyLevel < 0 || emergencyLevel > 3) {
             throw new IllegalArgumentException("Nivel de emrgencia invalido");
@@ -84,7 +94,6 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
         return true;
 
     }
-
     
     // Muestra los pacientes en orden de prioridad sin eliminarlos.
     @Override
@@ -185,6 +194,10 @@ public class WaitingRoomServiceImpl implements Interfaces.IWaitingRoomModule {
     @Override
     public Types.Visit finishVisit(String patientId, String doctorId, String nurseId, String notes) {
         
+        // Verificar que los datos de la visita sean validos
+        if (patientId == null || patientId.isBlank() || doctorId == null || doctorId.isBlank() || nurseId == null || nurseId.isBlank()) {
+            throw new IllegalArgumentException("Datos de visita incompletos");
+}
         //Verificar que el paciente este con ese medico
         if(!activeVisitIds.contains(patientId) || !doctorId.equals(patientDoctors.get(patientId))) {
             throw new IllegalArgumentException("Paciente no esta con este medico");
