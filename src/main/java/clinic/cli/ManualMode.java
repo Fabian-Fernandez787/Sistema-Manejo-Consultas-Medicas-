@@ -17,26 +17,29 @@ public class ManualMode {
 
     // Muestra el menu principal del sistema.
     private static void showMenu() {
-        System.out.println("\n=== SISTEMA DE CONSULTAS MEDICAS (MODO MANUAL) ===");
+        System.out.println("\n=== SISTEMA DE CONSULTAS MEDICAS ===");
         System.out.println("1. Registrar paciente");
         System.out.println("2. Registrar enfermera o secretario");
-        System.out.println("3. Ver medicos disponibles");
-        System.out.println("4. Buscar medicos por especialidad");
-        System.out.println("5. Registrar llegada de paciente");
-        System.out.println("6. Anadir paciente a sala de espera");
-        System.out.println("7. Programar cita");
-        System.out.println("8. Llamar proximo paciente");
-        System.out.println("9. Registrar signos vitales y finalizar visita");
-        System.out.println("10. Cancelar cita");
-        System.out.println("11. Ver citas de hoy");
-        System.out.println("12. Mostrar sala de espera");
-        System.out.println("13. Ver historial de un paciente");
-        System.out.println("14. Ver visitas recientes");
-        System.out.println("15. Ver pacientes asociados a un medico");
-        System.out.println("0. Regresar a seleccion de modo");
+        System.out.println("3. Registrar medico");
+        System.out.println("4. Eliminar medico");
+        System.out.println("5. Buscar empleado por ID");
+        System.out.println("6. Ver medicos disponibles");
+        System.out.println("7. Buscar medicos por especialidad");
+        System.out.println("8. Registrar llegada de paciente");
+        System.out.println("9. Anadir paciente a sala de espera");
+        System.out.println("10. Programar cita");
+        System.out.println("11. Llamar proximo paciente");
+        System.out.println("12. Registrar signos vitales y finalizar visita");
+        System.out.println("13. Cancelar cita");
+        System.out.println("14. Ver citas de hoy");
+        System.out.println("15. Mostrar sala de espera");
+        System.out.println("16. Ver historial de un paciente");
+        System.out.println("17. Ver visitas recientes");
+        System.out.println("18. Ver pacientes asociados a un medico");
+        System.out.println("0. Salir");
     }
 
-    // Ejecuta las opciones de los tres modulos usando el Scanner compartido.
+    // Ejecuta las opciones de los tres modulos.
     public static void run(Scanner sc) {
 
         RegistryServiceImpl registry = new RegistryServiceImpl();
@@ -96,6 +99,55 @@ public class ManualMode {
                     }
 
                     case 3: {
+                        // Registrar medico.
+                        String id = read(sc, "ID del medico: ");
+                        String name = read(sc, "Nombre: ");
+                        String spec = read(sc,
+                                "Especialidad (GENERAL/PEDIATRIC/NEURO/RETINA): ")
+                                .toUpperCase();
+
+                        boolean added = registry.registerEmployee(
+                                new Types.Doctor(
+                                        id, name, Types.Specialty.valueOf(spec)));
+
+                        System.out.println(added ?
+                                "Medico registrado" : "ID ya registrado");
+                        break;
+                    }
+
+                    case 4: {
+                        // Eliminar medico.
+                        String doctorId = read(sc, "ID del medico a eliminar: ");
+                        boolean removed = registry.removeDoctor(doctorId);
+
+                        System.out.println(removed ?
+                                "Medico eliminado" : "Medico no encontrado");
+                        break;
+                    }
+
+                    case 5: {
+                        // Buscar empleado por ID.
+                        String id = read(sc, "ID del empleado: ");
+                        Types.Employee emp = registry.getEmployee(id);
+
+                        if (emp == null) {
+                            System.out.println("Empleado no encontrado");
+                        } else if (emp instanceof Types.Doctor) {
+                            Types.Doctor doc = (Types.Doctor) emp;
+                            System.out.println(
+                                    doc.id + " | " + doc.name +
+                                    " | " + doc.role +
+                                    " | " + doc.specialty +
+                                    " | " + doc.status);
+                        } else {
+                            System.out.println(
+                                    emp.id + " | " + emp.name +
+                                    " | " + emp.role);
+                        }
+                        break;
+                    }
+
+                    case 6: {
                         // Mostrar medicos disponibles.
                         for (Types.Doctor d : registry.getAvailableDoctors()) {
                             System.out.println(
@@ -104,7 +156,7 @@ public class ManualMode {
                         break;
                     }
 
-                    case 4: {
+                    case 7: {
                         // Buscar medicos por especialidad.
                         String spec = read(sc,
                                 "Especialidad (GENERAL/PEDIATRIC/NEURO/RETINA): ")
@@ -119,8 +171,8 @@ public class ManualMode {
                         break;
                     }
 
-                    case 5:
-                    case 6: {
+                    case 8:
+                    case 9: {
                         // Registrar paciente en sala de espera.
                         String patientId = read(sc, "ID del paciente: ");
 
@@ -135,7 +187,7 @@ public class ManualMode {
                         break;
                     }
 
-                    case 7: {
+                    case 10: {
                         // Programar cita.
                         String patientId = read(sc, "ID del paciente: ");
                         String doctorId = read(sc, "ID del medico: ");
@@ -160,7 +212,7 @@ public class ManualMode {
                         break;
                     }
 
-                    case 8: {
+                    case 11: {
                         // Llamar al proximo paciente.
                         String doctorId = read(sc, "ID del medico: ");
 
@@ -172,7 +224,7 @@ public class ManualMode {
                         break;
                     }
 
-                    case 9: {
+                    case 12: {
                         // Registrar signos vitales y finalizar visita.
                         String patientId = read(sc, "ID del paciente: ");
                         String doctorId = read(sc, "ID del medico: ");
@@ -191,7 +243,7 @@ public class ManualMode {
                         break;
                     }
 
-                    case 10: {
+                    case 13: {
                         // Cancelar cita.
                         String id = read(sc, "ID de la cita: ");
 
@@ -204,7 +256,7 @@ public class ManualMode {
                         break;
                     }
 
-                    case 11: {
+                    case 14: {
                         // Mostrar citas de hoy.
                         for (Types.Appointment a :
                                 appointments.getTodaysAppointments()) {
@@ -218,14 +270,14 @@ public class ManualMode {
                         break;
                     }
 
-                    case 12: {
+                    case 15: {
                         // Mostrar pacientes esperando.
                         System.out.println(
                                 "En espera: " + waiting.listWaiting());
                         break;
                     }
 
-                    case 13: {
+                    case 16: {
                         // Mostrar historial de paciente.
                         String id = read(sc, "ID del paciente: ");
 
@@ -241,7 +293,7 @@ public class ManualMode {
                         break;
                     }
 
-                    case 14: {
+                    case 17: {
                         // Mostrar visitas recientes.
                         int n = Integer.parseInt(
                                 read(sc, "Cantidad de visitas: "));
@@ -257,7 +309,7 @@ public class ManualMode {
                         break;
                     }
 
-                    case 15: {
+                    case 18: {
                         // Mostrar pacientes asociados a un medico.
                         String id = read(sc, "ID del medico: ");
 
@@ -267,7 +319,7 @@ public class ManualMode {
                     }
 
                     case 0: {
-                        System.out.println("Regresando a seleccion de modo...");
+                        System.out.println("Hasta luego");
                         break;
                     }
 
@@ -277,8 +329,6 @@ public class ManualMode {
                     }
                 }
 
-            } catch (NumberFormatException e) {
-                System.out.println("Error: ingrese un numero valido.");
             } catch (IllegalArgumentException |
                      IllegalStateException |
                      UnsupportedOperationException e) {
