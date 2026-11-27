@@ -9,13 +9,17 @@ import clinic.waiting.WaitingRoomServiceImpl;
 
 public class ManualMode {
 
-    // Lee un dato escrito en la consola.
+    // Prompts the user and returns a line of input
+    // Calls: System.out.print(), sc.nextLine(), trim()
+    // Called by: run()
     private static String read(Scanner sc, String message) {
         System.out.print(message);
         return sc.nextLine().trim();
     }
 
-    // Muestra el menu principal del sistema.
+    // Displays the manual mode menu options
+    // Calls: System.out.println()
+    // Called by: run()
     private static void showMenu() {
         System.out.println("\n=== SISTEMA DE CONSULTAS MEDICAS (MODO MANUAL) ===");
         System.out.println("1. Registrar paciente");
@@ -36,7 +40,9 @@ public class ManualMode {
         System.out.println("0. Regresar a seleccion de modo");
     }
 
-    // Ejecuta las opciones de los tres modulos usando el Scanner compartido.
+    // Runs the manual CLI loop using the shared Scanner
+    // Calls: RegistryServiceImpl(), AppointmentManager(), WaitingRoomServiceImpl(), loadSeedData(), showMenu(), read(), Integer.parseInt(), service methods
+    // Called by: Main.main(), main()
     public static void run(Scanner sc) {
 
         RegistryServiceImpl registry = new RegistryServiceImpl();
@@ -45,7 +51,7 @@ public class ManualMode {
         WaitingRoomServiceImpl waiting =
                 new WaitingRoomServiceImpl(registry, appointments);
 
-        // Cargar datos iniciales.
+        // Load initial seed data for doctors, staff, and patients
         registry.loadSeedData();
 
         int option = -1;
@@ -60,7 +66,7 @@ public class ManualMode {
                 switch (option) {
 
                     case 1: {
-                        // Registrar paciente.
+                        // Register a new patient manually
                         String id = read(sc, "ID del paciente: ");
                         String name = read(sc, "Nombre: ");
                         String phone = read(sc, "Telefono: ");
@@ -74,7 +80,7 @@ public class ManualMode {
                     }
 
                     case 2: {
-                        // Registrar enfermera o secretario.
+                        // Register a nurse or secretary manually
                         String id = read(sc, "ID del empleado: ");
                         String name = read(sc, "Nombre: ");
                         String role = read(sc,
@@ -96,7 +102,7 @@ public class ManualMode {
                     }
 
                     case 3: {
-                        // Mostrar medicos disponibles.
+                        // Display available doctors
                         for (Types.Doctor d : registry.getAvailableDoctors()) {
                             System.out.println(
                                     d.id + " - " + d.name + " - " + d.specialty);
@@ -105,7 +111,7 @@ public class ManualMode {
                     }
 
                     case 4: {
-                        // Buscar medicos por especialidad.
+                        // Search doctors by specialty
                         String spec = read(sc,
                                 "Especialidad (GENERAL/PEDIATRIC/NEURO/RETINA): ")
                                 .toUpperCase();
@@ -121,7 +127,7 @@ public class ManualMode {
 
                     case 5:
                     case 6: {
-                        // Registrar paciente en sala de espera.
+                        // Check in a normal or emergency patient to the waiting room
                         String patientId = read(sc, "ID del paciente: ");
 
                         int level = Integer.parseInt(read(sc,
@@ -136,7 +142,7 @@ public class ManualMode {
                     }
 
                     case 7: {
-                        // Programar cita.
+                        // Schedule an appointment after checking patient and doctor existence
                         String patientId = read(sc, "ID del paciente: ");
                         String doctorId = read(sc, "ID del medico: ");
 
@@ -161,7 +167,7 @@ public class ManualMode {
                     }
 
                     case 8: {
-                        // Llamar al proximo paciente.
+                        // Call the next waiting patient for a doctor
                         String doctorId = read(sc, "ID del medico: ");
 
                         String patientId = waiting.callNext(doctorId);
@@ -173,7 +179,7 @@ public class ManualMode {
                     }
 
                     case 9: {
-                        // Registrar signos vitales y finalizar visita.
+                        // Record vitals and finish an active visit
                         String patientId = read(sc, "ID del paciente: ");
                         String doctorId = read(sc, "ID del medico: ");
                         String nurseId = read(sc, "ID de la enfermera: ");
@@ -192,7 +198,7 @@ public class ManualMode {
                     }
 
                     case 10: {
-                        // Cancelar cita.
+                        // Cancel an existing appointment by ID
                         String id = read(sc, "ID de la cita: ");
 
                         boolean cancelled =
@@ -205,7 +211,7 @@ public class ManualMode {
                     }
 
                     case 11: {
-                        // Mostrar citas de hoy.
+                        // Display today's appointments
                         for (Types.Appointment a :
                                 appointments.getTodaysAppointments()) {
 
@@ -219,14 +225,14 @@ public class ManualMode {
                     }
 
                     case 12: {
-                        // Mostrar pacientes esperando.
+                        // Display patients currently in the waiting room
                         System.out.println(
                                 "En espera: " + waiting.listWaiting());
                         break;
                     }
 
                     case 13: {
-                        // Mostrar historial de paciente.
+                        // Display visit history for a patient
                         String id = read(sc, "ID del paciente: ");
 
                         for (Types.Visit v : appointments.getHistory(id)) {
@@ -242,7 +248,7 @@ public class ManualMode {
                     }
 
                     case 14: {
-                        // Mostrar visitas recientes.
+                        // Display the n most recently completed visits
                         int n = Integer.parseInt(
                                 read(sc, "Cantidad de visitas: "));
 
@@ -258,7 +264,7 @@ public class ManualMode {
                     }
 
                     case 15: {
-                        // Mostrar pacientes asociados a un medico.
+                        // Display patients linked to a doctor
                         String id = read(sc, "ID del medico: ");
 
                         System.out.println(
@@ -277,8 +283,6 @@ public class ManualMode {
                     }
                 }
 
-            } catch (NumberFormatException e) {
-                System.out.println("Error: ingrese un numero valido.");
             } catch (IllegalArgumentException |
                      IllegalStateException |
                      UnsupportedOperationException e) {
@@ -288,7 +292,9 @@ public class ManualMode {
         }
     }
 
-    // Permite ejecutar este modo por separado.
+    // Manual Mode Runner
+    // Calls: Scanner(), run(), sc.close()
+    // Called by: JVM when launching ManualMode directly
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         run(sc);

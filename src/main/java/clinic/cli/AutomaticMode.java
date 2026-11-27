@@ -1,4 +1,3 @@
-
 package clinic.cli;
 
 import java.time.LocalDate;
@@ -11,7 +10,9 @@ import clinic.waiting.WaitingRoomServiceImpl;
 
 public class AutomaticMode {
 
-    // Muestra el menu del modo automatico.
+    // Displays the automatic mode menu options
+    // Calls: System.out.println()
+    // Called by: run()
     private static void showMenu() {
         System.out.println("\n=== SISTEMA MEDICO - MODO AUTOMATICO ===");
         System.out.println("1. Registrar paciente");
@@ -32,7 +33,9 @@ public class AutomaticMode {
         System.out.println("0. Regresar al menu principal");
     }
 
-    // Ejecuta el modo automatico con ejemplos preparados.
+    // Runs automatic mode with preloaded data, sample appointments, a sample visit, and waiting patients
+    // Calls: RegistryServiceImpl(), AppointmentManager(), WaitingRoomServiceImpl(), loadSeedData(), registerPatient(), LocalDate.now(), scheduleAppointment(), checkIn(), callNext(), recordVitals(), finishVisit(), showMenu()
+    // Called by: Main.main(), main()
     public static void run(Scanner sc) {
 
         RegistryServiceImpl registry = new RegistryServiceImpl();
@@ -41,17 +44,17 @@ public class AutomaticMode {
         WaitingRoomServiceImpl waiting =
                 new WaitingRoomServiceImpl(registry, appointments);
 
-        // Cargar pacientes, medicos y empleados iniciales.
+        // Load initial seed data for doctors, staff, and patients
         registry.loadSeedData();
 
-        // Crear pacientes adicionales para los ejemplos.
+        // Add extra patients for automatic test scenarios
         registry.registerPatient(
                 new Types.Patient("P106", "Paciente 6", "7871111111"));
 
         registry.registerPatient(
                 new Types.Patient("P107", "Paciente 7", "7872222222"));
 
-        // Crear citas de ejemplo.
+        // Create sample appointments for today
         String today = LocalDate.now().toString();
 
         Types.Appointment firstAppointment =
@@ -63,7 +66,7 @@ public class AutomaticMode {
 
         String appointmentId = firstAppointment.id;
 
-        // Crear una visita completada para el historial.
+        // Create one completed visit so history and recent visits have sample data
         waiting.checkIn("P105", 0);
         waiting.callNext("D104");
         waiting.recordVitals("P105", "N101", "120/80");
@@ -71,13 +74,13 @@ public class AutomaticMode {
         waiting.finishVisit(
                 "P105", "D104", "N101", "Consulta de ejemplo");
 
-        // Preparar pacientes en la sala de espera.
+        // Queue initial waiting patients with mixed normal and emergency levels
         waiting.checkIn("P101", 0);
         waiting.checkIn("P102", 2);
         waiting.checkIn("P103", 1);
         waiting.checkIn("P104", 2);
 
-        // Guardar la ultima asignacion realizada.
+        // Track the latest active assignment for automatic menu actions
         String activePatient = null;
         String activeDoctor = null;
 
@@ -96,7 +99,7 @@ public class AutomaticMode {
                 switch (option) {
 
                     case 1: {
-                        // Registrar un paciente automaticamente.
+                        // Automatically register a sample patient
                         Types.Patient patient = new Types.Patient(
                                 "P108", "Paciente Automatico", "7873333333");
 
@@ -110,7 +113,7 @@ public class AutomaticMode {
                     }
 
                     case 2: {
-                        // Registrar una enfermera automaticamente.
+                        // Automatically register a sample nurse
                         Types.Employee nurse = new Types.Employee(
                                 "N103", "Enfermera Automatica",
                                 Types.Role.NURSE);
@@ -125,7 +128,7 @@ public class AutomaticMode {
                     }
 
                     case 3: {
-                        // Mostrar los medicos disponibles.
+                        // Display available doctors
                         System.out.println("Medicos disponibles:");
 
                         for (Types.Doctor d : registry.getAvailableDoctors()) {
@@ -137,7 +140,7 @@ public class AutomaticMode {
                     }
 
                     case 4: {
-                        // Buscar medicos de neurologia.
+                        // Search doctors in the NEURO specialty
                         System.out.println("Especialidad: NEURO");
 
                         for (Types.Doctor d :
@@ -152,7 +155,7 @@ public class AutomaticMode {
                     }
 
                     case 5: {
-                        // Registrar una llegada normal.
+                        // Automatically check in normal patient P106 (level 0)
                         boolean added = waiting.checkIn("P106", 0);
 
                         System.out.println("Paciente: P106");
@@ -164,7 +167,7 @@ public class AutomaticMode {
                     }
 
                     case 6: {
-                        // Registrar una llegada de emergencia.
+                        // Automatically check in emergency patient P107 (level 1)
                         boolean added = waiting.checkIn("P107", 1);
 
                         System.out.println("Paciente: P107");
@@ -176,7 +179,7 @@ public class AutomaticMode {
                     }
 
                     case 7: {
-                        // Programar una cita automaticamente.
+                        // Automatically schedule a sample appointment for today
                         String time = today + "T11:00";
 
                         Types.Appointment appt =
@@ -193,7 +196,7 @@ public class AutomaticMode {
                     }
 
                     case 8: {
-                        // Llamar al siguiente paciente con un medico libre.
+                        // Call the next waiting patient using the first available doctor
                         if (registry.getAvailableDoctors().isEmpty()) {
                             System.out.println("No hay medicos disponibles");
                             break;
@@ -218,7 +221,7 @@ public class AutomaticMode {
                     }
 
                     case 9: {
-                        // Preparar una consulta si no hay una activa.
+                        // Start a visit if none is active, then record vitals and finish it
                         if (activePatient == null) {
 
                             if (waiting.listWaiting().isEmpty() ||
@@ -236,7 +239,6 @@ public class AutomaticMode {
                             activePatient = waiting.callNext(activeDoctor);
                         }
 
-                        // Registrar datos y finalizar la consulta.
                         waiting.recordVitals(
                                 activePatient, "N101", "120/80");
 
@@ -259,7 +261,7 @@ public class AutomaticMode {
                     }
 
                     case 10: {
-                        // Cancelar una cita automaticamente.
+                        // Automatically cancel the most recently tracked appointment
                         boolean cancelled =
                                 appointments.cancelAppointment(appointmentId);
 
@@ -271,7 +273,7 @@ public class AutomaticMode {
                     }
 
                     case 11: {
-                        // Mostrar citas del dia actual.
+                        // Display today's scheduled appointments
                         System.out.println("Citas de hoy:");
 
                         for (Types.Appointment a :
@@ -287,14 +289,14 @@ public class AutomaticMode {
                     }
 
                     case 12: {
-                        // Mostrar los pacientes en orden de prioridad.
+                        // Display waiting room patients in priority order
                         System.out.println("Sala de espera:");
                         System.out.println(waiting.listWaiting());
                         break;
                     }
 
                     case 13: {
-                        // Mostrar historial de un paciente de ejemplo.
+                        // Display sample visit history for patient P105
                         System.out.println("Historial del paciente P105:");
 
                         for (Types.Visit v : appointments.getHistory("P105")) {
@@ -308,7 +310,7 @@ public class AutomaticMode {
                     }
 
                     case 14: {
-                        // Mostrar las visitas mas recientes.
+                        // Display up to 5 recent visits
                         System.out.println("Visitas recientes:");
 
                         for (Types.Visit v :
@@ -323,7 +325,7 @@ public class AutomaticMode {
                     }
 
                     case 15: {
-                        // Mostrar pacientes asociados al medico D104.
+                        // Display patients linked to doctor D104
                         System.out.println("Medico: D104");
                         System.out.println(
                                 registry.getPatientsForDoctor("D104"));
@@ -350,7 +352,9 @@ public class AutomaticMode {
         }
     }
 
-    // Permite ejecutar este modo por separado.
+    // Automatic Mode Runner
+    // Calls: Scanner(), run()
+    // Called by: JVM when launching AutomaticMode directly
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         run(sc);

@@ -1,6 +1,8 @@
 package clinic.appointments;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,151 +22,215 @@ public class AppointmentManager implements IAppointmentsModule {
 
     private final Map<String, Appointment> appointmentMap;
     private final Map<String, Set<String>> doctorSchedule;
+    private final Map<String, Set<String>> patientSchedule;
     private final Map<String, List<Visit>> patientHistory;
     private final Deque<Visit> recentVisits;
-    
+
     private int idCounter;
 
-    // Initializes appointmentMap and doctorSchedule as HashMaps and idCounter to 1
+    // Initializes appointmentMap, doctorSchedule, patientSchedule, patientHistory, recentVisits, and idCounter
+    // Calls: HashMap, ArrayDeque
+    // Called by: CLI modes when creating an AppointmentManager instance
     public AppointmentManager() {
         this.appointmentMap = new HashMap<>();
         this.doctorSchedule = new HashMap<>();
+        this.patientSchedule = new HashMap<>();
         this.patientHistory = new HashMap<>();
         this.recentVisits = new ArrayDeque<>();
         this.idCounter = 1;
     }
 
-    // Checks if a specific doctor is available at specific time
-    // Calls containsKey(), get(), contains()
-    // Called by scheduleAppointment()
-    @Override 
-    public boolean isDoctorFree(String doctorId, String startTime) {
-        if (!doctorSchedule.containsKey(doctorId)) {
-            return true;
+    // Validates and normalizes an ISO-8601 appointment timestamp string
+    // Calls: isBlank(), trim(), LocalDateTime.parse(), IllegalArgumentException()
+    // Called by: isDoctorFree(), isPatientFree(), scheduleAppointment()
+    private static String normalizeStartTime(String startTime) {
+        if (startTime == null || startTime.isBlank()) {
+            throw new IllegalArgumentException("Start time cannot be null or blank");
         }
-        return !doctorSchedule.get(doctorId).contains(startTime);
+        String trimmed = startTime.trim();
+        try {
+            LocalDateTime.parse(trimmed);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid start time format (expected ISO-8601, e.g., AAAA-MM-DDTHH:MM): " + trimmed);
+        }
+        return trimmed;
     }
 
-    // Checks if doctor is free, creates a unique ID for the appointment and returns appointment object
-    // Calls isDoctorFree(), IllegalStateException(), format(), Appointment(), put(), computeIfAbsent(), TreeSet<>(), add()
-    // Called by CLI menu
-    @Override 
+    // Checks if a specific doctor has no booked appointment at startTime
+    // Calls: isBlank(), normalizeStartTime(), doctorSchedule.get(), contains()
+    // Called by: scheduleAppointment()
+    @Override
+    public boolean isDoctorFree(String doctorId, String startTime) {
+        if (doctorId == null || doctorId.isBlank()) {
+            throw new IllegalArgumentException("Doctor ID cannot be null or blank");
+        }
+        String normalizedTime = normalizeStartTime(startTime);
+        Set<String> bookedSlots = doctorSchedule.get(doctorId);
+        return bookedSlots == null || !bookedSlots.contains(normalizedTime);
+    }
+
+    // Checks if a specific patient has no booked appointment at startTime
+    // Calls: isBlank(), normalizeStartTime(), patientSchedule.get(), contains()
+    // Called by: scheduleAppointment()
+    public boolean isPatientFree(String patientId, String startTime) {
+        if (patientId == null || patientId.isBlank()) {
+            throw new IllegalArgumentException("Patient ID cannot be null or blank");
+        }
+        String normalizedTime = normalizeStartTime(startTime);
+        Set<String> bookedSlots = patientSchedule.get(patientId);
+        return bookedSlots == null || !bookedSlots.contains(normalizedTime);
+    }
+
+    // Validates inputs and availability, creates an appointment, and records slots for doctor and patient
+    // Calls: isBlank(), normalizeStartTime(), isDoctorFree(), isPatientFree(), IllegalStateException(), format(), Appointment(), appointmentMap.put(), computeIfAbsent(), TreeSet<>, add()
+    // Called by: CLI menu
+    @Override
     public Appointment scheduleAppointment(String patientId, String doctorId, String startTime) {
-        // Checks doctor availability
-        if (!isDoctorFree(doctorId, startTime)) {
-            throw new IllegalStateException("Doctor " + doctorId + " is already booked at " + startTime);
+        if (patientId == null || patientId.isBlank()) {
+            throw new IllegalArgumentException("Patient ID cannot be null or blank");
+        }
+        if (doctorId == null || doctorId.isBlank()) {
+            throw new IllegalArgumentException("Doctor ID cannot be null or blank");
         }
 
-        // Create ID for appointment
+        String normalizedTime = normalizeStartTime(startTime);
+
+        // Ensure neither the doctor nor the patient already has a slot at this time
+        if (!isDoctorFree(doctorId, normalizedTime)) {
+            throw new IllegalStateException("Doctor " + doctorId + " is already booked at " + normalizedTime);
+        }
+        if (!isPatientFree(patientId, normalizedTime)) {
+            throw new IllegalStateException("Patient " + patientId + " already has an appointment at " + normalizedTime);
+        }
+
         String apptId = String.format("APT-%03d", idCounter++);
 
-        // Build appointment object
         Appointment newAppt = new Appointment();
         newAppt.id = apptId;
         newAppt.patientId = patientId;
         newAppt.doctorId = doctorId;
-        newAppt.startTime = startTime;
+        newAppt.startTime = normalizedTime;
         newAppt.status = AppointmentStatus.SCHEDULED;
 
-        // Store object in maps using appointment ID
         appointmentMap.put(apptId, newAppt);
-        doctorSchedule.computeIfAbsent(doctorId, k -> new TreeSet<>()).add(startTime);
+        doctorSchedule.computeIfAbsent(doctorId, k -> new TreeSet<>()).add(normalizedTime);
+        patientSchedule.computeIfAbsent(patientId, k -> new TreeSet<>()).add(normalizedTime);
 
         return newAppt;
     }
 
-    // Checks if appointment exists, cancels if scheduled and makes the doctor's slot available
-    // Calls get(), containsKey(), remove()
-    // Called by CLI menu
-    @Override 
+    // Releases a booked time slot from both doctorSchedule and patientSchedule
+    // Calls: containsKey(), get(), remove()
+    // Called by: cancelAppointment(), addVisit()
+    private void releaseSlot(Appointment appt) {
+        if (appt.startTime == null) {
+            return;
+        }
+        if (appt.doctorId != null && doctorSchedule.containsKey(appt.doctorId)) {
+            doctorSchedule.get(appt.doctorId).remove(appt.startTime);
+        }
+        if (appt.patientId != null && patientSchedule.containsKey(appt.patientId)) {
+            patientSchedule.get(appt.patientId).remove(appt.startTime);
+        }
+    }
+
+    // Marks a scheduled appointment as CANCELLED and frees the doctor and patient time slots
+    // Calls: isBlank(), appointmentMap.get(), releaseSlot()
+    // Called by: CLI menu
+    @Override
     public boolean cancelAppointment(String appointmentId) {
-        // Check if ID exists
+        if (appointmentId == null || appointmentId.isBlank()) {
+            return false;
+        }
+
         Appointment appt = appointmentMap.get(appointmentId);
         if (appt == null) {
             return false;
         }
 
-        // Cancel if currently scheduled
         if (appt.status != AppointmentStatus.SCHEDULED) {
             return false;
         }
 
-        // Mark as CANCELLED and free the doctor's slot
         appt.status = AppointmentStatus.CANCELLED;
-        if (doctorSchedule.containsKey(appt.doctorId)) {
-            doctorSchedule.get(appt.doctorId).remove(appt.startTime);
-        }
+        releaseSlot(appt);
 
         return true;
     }
 
-    // Gets today's date and returns all appointments for today
-    // Calls now(), toString(), getAppointmentsForDate()
-    // Called by CLI menu
-    @Override 
+    // Gets today's date and returns non-cancelled appointments scheduled for today
+    // Calls: LocalDate.now(), toString(), getAppointmentsForDate()
+    // Called by: CLI menu
+    @Override
     public List<Appointment> getTodaysAppointments() {
         String today = LocalDate.now().toString();
         return getAppointmentsForDate(today);
     }
 
-    // Sorts appointment for date and returns them excluding cancelled ones
-    // Calls ArrayList<>(), startsWith(), values(), add(), comparing()
-    // Called by getTodaysAppointments()
+    // Filters non-cancelled appointments matching datePrefix and sorts them by startTime
+    // Calls: ArrayList<>, isBlank(), appointmentMap.values(), startsWith(), add(), sort(), Comparator.comparing(), nullsLast(), naturalOrder()
+    // Called by: getTodaysAppointments()
     public List<Appointment> getAppointmentsForDate(String datePrefix) {
         List<Appointment> result = new ArrayList<>();
+        if (datePrefix == null || datePrefix.isBlank()) {
+            return result;
+        }
 
-        for (Appointment appt: appointmentMap.values()) {
-            if (appt.startTime != null && appt.startTime.startsWith(datePrefix) && appt.status != AppointmentStatus.CANCELLED) {
+        for (Appointment appt : appointmentMap.values()) {
+            if (appt != null
+                    && appt.startTime != null
+                    && appt.startTime.startsWith(datePrefix)
+                    && appt.status != AppointmentStatus.CANCELLED) {
                 result.add(appt);
             }
         }
 
-        result.sort(Comparator.comparing(appt -> appt.startTime));
+        // Keep null timestamps at the end if any exist
+        result.sort(Comparator.comparing(
+                (Appointment appt) -> appt.startTime,
+                Comparator.nullsLast(Comparator.naturalOrder())
+        ));
         return result;
     }
 
-    // Appends visit to patient's history, pushes to recent visits deque, and marks matching appointment COMPLETED
-    // Calls computeIfAbsent(), ArrayList<>(), add(), addFirst(), values(), equals(), containsKey(), remove()
-    // Called by WaitingRoomModule.finishVisit() 
+    // Records a completed visit in patient history and recentVisits, completing any matching scheduled appointment
+    // Calls: isBlank(), IllegalArgumentException(), computeIfAbsent(), ArrayList<>, add(), recentVisits.addFirst(), appointmentMap.values(), equals(), releaseSlot()
+    // Called by: WaitingRoomServiceImpl.finishVisit()
     @Override
     public void addVisit(Visit visit) {
-        if (visit == null || visit.patientId == null) {
-            throw new IllegalArgumentException("Visit and patientId cannot be null");
+        if (visit == null || visit.patientId == null || visit.patientId.isBlank()) {
+            throw new IllegalArgumentException("Visit and patientId cannot be null or blank");
         }
 
-        // Append to medical history (oldest to newest)
         patientHistory.computeIfAbsent(visit.patientId, k -> new ArrayList<>()).add(visit);
-
-        // Push to the front of recentVisits deque
         recentVisits.addFirst(visit);
 
-        // Find matching SCHEDULED appointment for this patient & doctor and mark COMPLETED
         for (Appointment appt : appointmentMap.values()) {
-            if (appt.status == AppointmentStatus.SCHEDULED && appt.patientId.equals(visit.patientId)&& appt.doctorId.equals(visit.doctorId)) {
+            if (appt.status == AppointmentStatus.SCHEDULED
+                    && visit.patientId.equals(appt.patientId)
+                    && visit.doctorId != null
+                    && visit.doctorId.equals(appt.doctorId)) {
                 appt.status = AppointmentStatus.COMPLETED;
-                if (doctorSchedule.containsKey(appt.doctorId)) {
-                    doctorSchedule.get(appt.doctorId).remove(appt.startTime);
-                }
+                releaseSlot(appt);
                 break;
             }
         }
     }
 
-    // Returns a patient's chronological visit history from oldest to newest (empty list if none)
-    // Calls containsKey(), ArrayList<>(), get()
-    // Called by CLI menu
+    // Returns a defensive copy of a patient's chronological visit history
+    // Calls: isBlank(), patientHistory.containsKey(), ArrayList<>, patientHistory.get()
+    // Called by: CLI menu
     @Override
     public List<Visit> getHistory(String patientId) {
-        if (patientId == null || !patientHistory.containsKey(patientId)) {
+        if (patientId == null || patientId.isBlank() || !patientHistory.containsKey(patientId)) {
             return new ArrayList<>();
         }
-        // Return a defensive copy so external callers cannot accidentally modify internal history
         return new ArrayList<>(patientHistory.get(patientId));
     }
 
     // Returns up to n most recently completed visits, ordered newest first
-    // Calls ArrayList<>(), add()
-    // Called by CLI menu
+    // Calls: ArrayList<>, add()
+    // Called by: CLI menu
     @Override
     public List<Visit> getRecentCompleted(int n) {
         List<Visit> result = new ArrayList<>();
@@ -182,5 +248,4 @@ public class AppointmentManager implements IAppointmentsModule {
         }
         return result;
     }
-
 }

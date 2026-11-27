@@ -4,6 +4,9 @@ import java.util.Scanner;
 
 public class Main {
 
+    // Displays the mode selection menu
+    // Calls: System.out.println()
+    // Called by: main()
     private static void showModeMenu() {
         System.out.println("\n=== SELECCIONAR MODO DE EJECUCION ===");
         System.out.println("1. Modo manual (ingresar datos paso a paso)");
@@ -11,6 +14,9 @@ public class Main {
         System.out.println("0. Salir");
     }
 
+    // Lets the user choose between ManualMode and AutomaticMode
+    // Calls: Scanner(), showModeMenu(), sc.nextLine(), trim(), Integer.parseInt(), ManualMode.run(), AutomaticMode.run(), sc.close()
+    // Called by: JVM when starting the application
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         int mode = -1;
