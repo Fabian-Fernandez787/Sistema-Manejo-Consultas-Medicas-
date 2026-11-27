@@ -36,7 +36,7 @@ public class AutomaticMode {
         System.out.println("0. Regresar al menu principal");
     }
 
-    // Runs automatic mode with preloaded seed data, sample appointments, a sample visit, and waiting patients
+    // Runs automatic mode with preloaded data, sample appointments, a sample visit, and waiting patients
     // Calls: RegistryServiceImpl(), AppointmentManager(), WaitingRoomServiceImpl(), loadSeedData(), registerPatient(), LocalDate.now(), scheduleAppointment(), checkIn(), callNext(), recordVitals(), finishVisit(), showMenu()
     // Called by: Main.main(), main()
     public static void run(Scanner sc) {
@@ -131,45 +131,6 @@ public class AutomaticMode {
                     }
 
                     case 3: {
-                        // Automatically register a sample RETINA doctor
-                        Types.Doctor doctor = new Types.Doctor(
-                                "D105", "Doctora Automatica",
-                                Types.Specialty.RETINA);
-
-                        boolean added = registry.registerEmployee(doctor);
-
-                        System.out.println("Medico: " + doctor.id);
-                        System.out.println(added ?
-                                "Medico registrado" :
-                                "Medico ya registrado");
-                        break;
-                    }
-
-                    case 4: {
-                        // Automatically remove sample doctor D105 (or fallback to D103)
-                        String targetId = registry.getEmployee("D105") != null
-                                ? "D105" : "D103";
-                        boolean removed = registry.removeDoctor(targetId);
-
-                        System.out.println("Medico: " + targetId);
-                        System.out.println(removed ?
-                                "Medico eliminado" :
-                                "Medico no encontrado");
-                        break;
-                    }
-
-                    case 5: {
-                        // Automatically look up employee N101 by ID
-                        Types.Employee emp = registry.getEmployee("N101");
-
-                        System.out.println("Empleado buscado: N101");
-                        System.out.println(emp != null
-                                ? (emp.id + " | " + emp.name + " | " + emp.role)
-                                : "Empleado no encontrado");
-                        break;
-                    }
-
-                    case 6: {
                         // Display available doctors
                         System.out.println("Medicos disponibles:");
 
@@ -181,7 +142,7 @@ public class AutomaticMode {
                         break;
                     }
 
-                    case 7: {
+                    case 4: {
                         // Search doctors in the NEURO specialty
                         System.out.println("Especialidad: NEURO");
 
@@ -196,7 +157,7 @@ public class AutomaticMode {
                         break;
                     }
 
-                    case 8: {
+                    case 5: {
                         // Automatically check in normal patient P106 (level 0)
                         boolean added = waiting.checkIn("P106", 0);
 
@@ -208,7 +169,7 @@ public class AutomaticMode {
                         break;
                     }
 
-                    case 9: {
+                    case 6: {
                         // Automatically check in emergency patient P107 (level 1)
                         boolean added = waiting.checkIn("P107", 1);
 
@@ -220,7 +181,7 @@ public class AutomaticMode {
                         break;
                     }
 
-                    case 10: {
+                    case 7: {
                         // Automatically schedule a sample appointment for today
                         String time = today + "T11:00";
 
@@ -237,7 +198,7 @@ public class AutomaticMode {
                         break;
                     }
 
-                    case 11: {
+                    case 8: {
                         // Call the next waiting patient using the first available doctor
                         if (registry.getAvailableDoctors().isEmpty()) {
                             System.out.println("No hay medicos disponibles");
@@ -262,7 +223,7 @@ public class AutomaticMode {
                         break;
                     }
 
-                    case 12: {
+                    case 9: {
                         // Start a visit if none is active, then record vitals and finish it
                         if (activePatient == null) {
 
@@ -302,7 +263,7 @@ public class AutomaticMode {
                         break;
                     }
 
-                    case 13: {
+                    case 10: {
                         // Automatically cancel the most recently tracked appointment
                         boolean cancelled =
                                 appointments.cancelAppointment(appointmentId);
@@ -314,7 +275,7 @@ public class AutomaticMode {
                         break;
                     }
 
-                    case 14: {
+                    case 11: {
                         // Display today's scheduled appointments
                         System.out.println("Citas de hoy:");
 
@@ -330,14 +291,14 @@ public class AutomaticMode {
                         break;
                     }
 
-                    case 15: {
+                    case 12: {
                         // Display waiting room patients in priority order
                         System.out.println("Sala de espera:");
                         System.out.println(waiting.listWaiting());
                         break;
                     }
 
-                    case 16: {
+                    case 13: {
                         // Display sample visit history for patient P105
                         System.out.println("Historial del paciente P105:");
 
@@ -351,8 +312,8 @@ public class AutomaticMode {
                         break;
                     }
 
-                    case 17: {
-                        // Display up to 5 recent completed visits
+                    case 14: {
+                        // Display up to 5 recent visits
                         System.out.println("Visitas recientes:");
 
                         for (Types.Visit v :
@@ -366,7 +327,7 @@ public class AutomaticMode {
                         break;
                     }
 
-                    case 18: {
+                    case 15: {
                         // Display patients linked to doctor D104
                         System.out.println("Medico: D104");
                         System.out.println(
@@ -395,7 +356,7 @@ public class AutomaticMode {
     }
 
     // Automatic Mode Runner
-    // Calls: Scanner(), run(), sc.close()
+    // Calls: Scanner(), run()
     // Called by: JVM when launching AutomaticMode directly
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
