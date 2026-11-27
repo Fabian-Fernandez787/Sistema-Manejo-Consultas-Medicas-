@@ -1,13 +1,13 @@
 
 package clinic.cli;
 
+import java.time.LocalDate;
+import java.util.Scanner;
+
 import clinic.appointments.AppointmentManager;
 import clinic.common.Types;
 import clinic.registry.RegistryServiceImpl;
 import clinic.waiting.WaitingRoomServiceImpl;
-
-import java.time.LocalDate;
-import java.util.Scanner;
 
 public class AutomaticMode {
 
